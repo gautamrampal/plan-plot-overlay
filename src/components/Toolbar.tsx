@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ImageUploader } from './ImageUploader';
-import { MousePointer, Plus, Square, Upload, FileExport } from 'lucide-react';
+import { MousePointer, Plus, Square, Upload } from 'lucide-react';
 import { FloorPlanState } from './FloorPlanEditor';
 
 interface ToolbarProps {
@@ -13,7 +13,6 @@ interface ToolbarProps {
   onComplete: () => void;
   onClear: () => void;
   onOverlayUpload: (imageUrl: string) => void;
-  onExport: () => void;
   opacity: number;
   onOpacityChange: (opacity: number) => void;
   hasPoints: boolean;
@@ -26,7 +25,6 @@ export const Toolbar = ({
   onComplete,
   onClear,
   onOverlayUpload,
-  onExport,
   opacity,
   onOpacityChange,
   hasPoints,
@@ -87,16 +85,6 @@ export const Toolbar = ({
             >
               <Upload className="w-4 h-4 mr-2" />
               Add Overlay
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={onExport}
-              size="sm"
-              className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-            >
-              <FileExport className="w-4 h-4 mr-2" />
-              Export
             </Button>
 
             {hasOverlay && (
