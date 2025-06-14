@@ -1,16 +1,14 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { ImageUploader } from './ImageUploader';
-import { MousePointer, Plus, Square, Upload } from 'lucide-react';
+import { MousePointer, Plus, Upload } from 'lucide-react';
 import { FloorPlanState } from './FloorPlanEditor';
 
 interface ToolbarProps {
   mode: FloorPlanState['mode'];
   onModeChange: (mode: FloorPlanState['mode']) => void;
-  onComplete: () => void;
   onClear: () => void;
   onOverlayUpload: (imageUrl: string) => void;
   opacity: number;
@@ -22,7 +20,6 @@ interface ToolbarProps {
 export const Toolbar = ({
   mode,
   onModeChange,
-  onComplete,
   onClear,
   onOverlayUpload,
   opacity,
@@ -56,24 +53,13 @@ export const Toolbar = ({
             </Button>
 
             {hasPoints && (
-              <>
-                <Button
-                  onClick={onComplete}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                  size="sm"
-                >
-                  <Square className="w-4 h-4 mr-2" />
-                  Mark Center
-                </Button>
-                
-                <Button
-                  variant="destructive"
-                  onClick={onClear}
-                  size="sm"
-                >
-                  Clear Points
-                </Button>
-              </>
+              <Button
+                variant="destructive"
+                onClick={onClear}
+                size="sm"
+              >
+                Clear Points
+              </Button>
             )}
           </div>
 

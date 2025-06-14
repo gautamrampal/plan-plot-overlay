@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
@@ -52,6 +53,19 @@ export const FloorPlanEditor = () => {
     },
   });
 
+  const calculateCenter = (points: Point[]) => {
+    if (points.length < 3) return null;
+    
+    const centerX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
+    const centerY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+    
+    return {
+      x: centerX,
+      y: centerY,
+      id: 'center',
+    };
+  };
+
   const handleFloorPlanUpload = (imageUrl: string) => {
     setState(prev => ({
       ...prev,
@@ -71,35 +85,21 @@ export const FloorPlanEditor = () => {
   };
 
   const handlePointAdd = (point: Point) => {
-    setState(prev => ({
-      ...prev,
-      points: [...prev.points, point],
-    }));
-  };
-
-  const handlePointsComplete = () => {
-    if (state.points.length < 3) {
-      toast.error('Please plot at least 3 points to calculate center');
-      return;
-    }
-
-    // Calculate center point
-    const centerX = state.points.reduce((sum, p) => sum + p.x, 0) / state.points.length;
-    const centerY = state.points.reduce((sum, p) => sum + p.y, 0) / state.points.length;
-    
-    const center: Point = {
-      x: centerX,
-      y: centerY,
-      id: 'center',
-    };
-
-    setState(prev => ({
-      ...prev,
-      center,
-      mode: 'select',
-    }));
-    
-    toast.success('Center point calculated and marked!');
+    setState(prev => {
+      const newPoints = [...prev.points, point];
+      const newCenter = calculateCenter(newPoints);
+      
+      // Show toast when center is first calculated
+      if (newPoints.length === 3 && !prev.center) {
+        toast.success('Center point calculated and marked!');
+      }
+      
+      return {
+        ...prev,
+        points: newPoints,
+        center: newCenter,
+      };
+    });
   };
 
   const handleClearPoints = () => {
@@ -150,7 +150,6 @@ export const FloorPlanEditor = () => {
       <Toolbar
         mode={state.mode}
         onModeChange={handleModeChange}
-        onComplete={handlePointsComplete}
         onClear={handleClearPoints}
         onOverlayUpload={handleOverlayUpload}
         opacity={state.overlayOpacity}
