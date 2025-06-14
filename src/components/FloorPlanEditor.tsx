@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
 import { Toolbar } from './Toolbar';
+import { OverlayControls } from './OverlayControls';
 import { toast } from 'sonner';
 
 export interface Point {
@@ -18,6 +19,17 @@ export interface FloorPlanState {
   center: Point | null;
   mode: 'select' | 'plot' | 'overlay';
   overlayOpacity: number;
+  overlayVisible: boolean;
+  overlayRotation: number;
+  overlayScale: number;
+  displayOptions: {
+    directions: boolean;
+    entrances: boolean;
+    chakra: boolean;
+    planets: boolean;
+    vastu: boolean;
+    analysis: boolean;
+  };
 }
 
 export const FloorPlanEditor = () => {
@@ -28,6 +40,17 @@ export const FloorPlanEditor = () => {
     center: null,
     mode: 'select',
     overlayOpacity: 0.5,
+    overlayVisible: true,
+    overlayRotation: 0,
+    overlayScale: 1,
+    displayOptions: {
+      directions: true,
+      entrances: false,
+      chakra: true,
+      planets: false,
+      vastu: false,
+      analysis: false,
+    },
   });
 
   const handleFloorPlanUpload = (imageUrl: string) => {
@@ -97,28 +120,69 @@ export const FloorPlanEditor = () => {
     setState(prev => ({ ...prev, overlayOpacity: opacity }));
   };
 
+  const handleRotationChange = (rotation: number) => {
+    setState(prev => ({ ...prev, overlayRotation: rotation }));
+  };
+
+  const handleScaleChange = (scale: number) => {
+    setState(prev => ({ ...prev, overlayScale: scale }));
+  };
+
+  const handleToggleOverlay = (visible: boolean) => {
+    setState(prev => ({ ...prev, overlayVisible: visible }));
+  };
+
+  const handleDisplayOptionChange = (option: string, value: boolean) => {
+    setState(prev => ({
+      ...prev,
+      displayOptions: {
+        ...prev.displayOptions,
+        [option]: value,
+      },
+    }));
+  };
+
   if (!state.floorPlanImage) {
     return <ImageUploader onImageUpload={handleFloorPlanUpload} title="Upload Floor Plan" />;
   }
 
   return (
-    <div className="space-y-6">
-      <Toolbar
-        mode={state.mode}
-        onModeChange={handleModeChange}
-        onComplete={handlePointsComplete}
-        onClear={handleClearPoints}
-        onOverlayUpload={handleOverlayUpload}
-        opacity={state.overlayOpacity}
-        onOpacityChange={handleOpacityChange}
-        hasPoints={state.points.length > 0}
-        hasOverlay={!!state.overlayImage}
-      />
-      
-      <FloorPlanCanvas
-        state={state}
-        onPointAdd={handlePointAdd}
-      />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
+        <Toolbar
+          mode={state.mode}
+          onModeChange={handleModeChange}
+          onComplete={handlePointsComplete}
+          onClear={handleClearPoints}
+          onOverlayUpload={handleOverlayUpload}
+          opacity={state.overlayOpacity}
+          onOpacityChange={handleOpacityChange}
+          hasPoints={state.points.length > 0}
+          hasOverlay={!!state.overlayImage}
+        />
+        
+        <FloorPlanCanvas
+          state={state}
+          onPointAdd={handlePointAdd}
+        />
+      </div>
+
+      {state.overlayImage && (
+        <div className="lg:col-span-1">
+          <OverlayControls
+            isVisible={state.overlayVisible}
+            rotation={state.overlayRotation}
+            scale={state.overlayScale}
+            opacity={state.overlayOpacity}
+            onRotationChange={handleRotationChange}
+            onScaleChange={handleScaleChange}
+            onOpacityChange={handleOpacityChange}
+            displayOptions={state.displayOptions}
+            onDisplayOptionChange={handleDisplayOptionChange}
+            onToggleOverlay={handleToggleOverlay}
+          />
+        </div>
+      )}
     </div>
   );
 };

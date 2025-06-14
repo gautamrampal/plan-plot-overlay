@@ -14,7 +14,6 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [overlaySelected, setOverlaySelected] = useState(false);
-  const [overlayScale, setOverlayScale] = useState(1);
   const [overlayBounds, setOverlayBounds] = useState<{
     x: number;
     y: number;
@@ -60,8 +59,8 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
 
         ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
 
-        // Draw overlay image if present
-        if (state.overlayImage && state.center) {
+        // Draw overlay image if present and visible
+        if (state.overlayImage && state.center && state.overlayVisible) {
           const overlayImg = new Image();
           overlayImg.onload = () => {
             ctx.save();
@@ -69,7 +68,7 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
 
             // Scale overlay to be proportional to floor plan with user scaling
             const baseOverlayScale = Math.min(scaledWidth, scaledHeight) * 0.3;
-            const finalOverlayScale = baseOverlayScale * overlayScale;
+            const finalOverlayScale = baseOverlayScale * state.overlayScale;
             const overlayWidth = finalOverlayScale;
             const overlayHeight = (overlayImg.height / overlayImg.width) * finalOverlayScale;
 
@@ -77,9 +76,14 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
             const overlayX = state.center.x - overlayWidth / 2;
             const overlayY = state.center.y - overlayHeight / 2;
 
+            // Apply rotation
+            ctx.translate(state.center.x, state.center.y);
+            ctx.rotate((state.overlayRotation * Math.PI) / 180);
+            ctx.translate(-state.center.x, -state.center.y);
+
             ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
 
-            // Store overlay bounds for selection detection
+            // Store overlay bounds for selection detection (before rotation)
             setOverlayBounds({
               x: overlayX,
               y: overlayY,
@@ -157,7 +161,7 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
       };
       img.src = state.floorPlanImage;
     }
-  }, [state, overlayScale, overlaySelected]);
+  }, [state, overlaySelected]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
@@ -194,35 +198,15 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
     }
   };
 
-  const handleScaleChange = (delta: number) => {
-    setOverlayScale(prev => Math.max(0.1, Math.min(3, prev + delta)));
-  };
-
   return (
     <Card className="p-4" ref={containerRef}>
       <div className="space-y-4">
-        {overlaySelected && state.overlayImage && (
+        {overlaySelected && state.overlayImage && state.overlayVisible && (
           <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
             <span className="text-sm font-medium text-blue-800">Overlay Selected</span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleScaleChange(-0.1)}
-              className="h-8 w-8 p-0"
-            >
-              <Minus className="w-4 h-4" />
-            </Button>
-            <span className="text-sm text-blue-700 min-w-[60px] text-center">
-              {Math.round(overlayScale * 100)}%
+            <span className="text-xs text-blue-600">
+              Use the controls panel to adjust settings
             </span>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleScaleChange(0.1)}
-              className="h-8 w-8 p-0"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
           </div>
         )}
 
@@ -251,9 +235,15 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
           </div>
         )}
 
-        {state.overlayImage && (
+        {state.overlayImage && !state.overlayVisible && (
+          <div className="text-center text-sm text-orange-600">
+            Overlay is hidden - use controls to show it
+          </div>
+        )}
+
+        {state.overlayImage && state.overlayVisible && (
           <div className="text-center text-sm text-slate-600">
-            Click on the overlay image to select and resize it
+            Click on the overlay image to select it
           </div>
         )}
       </div>
