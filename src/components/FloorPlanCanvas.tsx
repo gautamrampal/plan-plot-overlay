@@ -1,7 +1,8 @@
-
 import React, { useRef, useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { FloorPlanState, Point } from './FloorPlanEditor';
+import { Plus, Minus } from 'lucide-react';
 
 interface FloorPlanCanvasProps {
   state: FloorPlanState;
@@ -12,6 +13,14 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [overlaySelected, setOverlaySelected] = useState(false);
+  const [overlayScale, setOverlayScale] = useState(1);
+  const [overlayBounds, setOverlayBounds] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   useEffect(() => {
     const updateSize = () => {
@@ -58,16 +67,35 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
             ctx.save();
             ctx.globalAlpha = state.overlayOpacity;
 
-            // Scale overlay to be proportional to floor plan
-            const overlayScale = Math.min(scaledWidth, scaledHeight) * 0.3; // 30% of floor plan size
-            const overlayWidth = overlayScale;
-            const overlayHeight = (overlayImg.height / overlayImg.width) * overlayScale;
+            // Scale overlay to be proportional to floor plan with user scaling
+            const baseOverlayScale = Math.min(scaledWidth, scaledHeight) * 0.3;
+            const finalOverlayScale = baseOverlayScale * overlayScale;
+            const overlayWidth = finalOverlayScale;
+            const overlayHeight = (overlayImg.height / overlayImg.width) * finalOverlayScale;
 
             // Center the overlay on the calculated center point
             const overlayX = state.center.x - overlayWidth / 2;
             const overlayY = state.center.y - overlayHeight / 2;
 
             ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
+
+            // Store overlay bounds for selection detection
+            setOverlayBounds({
+              x: overlayX,
+              y: overlayY,
+              width: overlayWidth,
+              height: overlayHeight,
+            });
+
+            // Draw selection border if overlay is selected
+            if (overlaySelected) {
+              ctx.strokeStyle = '#3b82f6';
+              ctx.lineWidth = 2;
+              ctx.setLineDash([5, 5]);
+              ctx.strokeRect(overlayX - 2, overlayY - 2, overlayWidth + 4, overlayHeight + 4);
+              ctx.setLineDash([]);
+            }
+
             ctx.restore();
           };
           overlayImg.src = state.overlayImage;
@@ -129,11 +157,9 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
       };
       img.src = state.floorPlanImage;
     }
-  }, [state]);
+  }, [state, overlayScale, overlaySelected]);
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (state.mode !== 'plot') return;
-
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -141,18 +167,65 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const newPoint: Point = {
-      x,
-      y,
-      id: `point-${Date.now()}`,
-    };
+    // Check if clicking on overlay
+    if (overlayBounds && state.overlayImage) {
+      const clickedOnOverlay = 
+        x >= overlayBounds.x && 
+        x <= overlayBounds.x + overlayBounds.width &&
+        y >= overlayBounds.y && 
+        y <= overlayBounds.y + overlayBounds.height;
 
-    onPointAdd(newPoint);
+      if (clickedOnOverlay) {
+        setOverlaySelected(true);
+        return;
+      } else {
+        setOverlaySelected(false);
+      }
+    }
+
+    // Handle point plotting
+    if (state.mode === 'plot') {
+      const newPoint: Point = {
+        x,
+        y,
+        id: `point-${Date.now()}`,
+      };
+      onPointAdd(newPoint);
+    }
+  };
+
+  const handleScaleChange = (delta: number) => {
+    setOverlayScale(prev => Math.max(0.1, Math.min(3, prev + delta)));
   };
 
   return (
     <Card className="p-4" ref={containerRef}>
       <div className="space-y-4">
+        {overlaySelected && state.overlayImage && (
+          <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
+            <span className="text-sm font-medium text-blue-800">Overlay Selected</span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleScaleChange(-0.1)}
+              className="h-8 w-8 p-0"
+            >
+              <Minus className="w-4 h-4" />
+            </Button>
+            <span className="text-sm text-blue-700 min-w-[60px] text-center">
+              {Math.round(overlayScale * 100)}%
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleScaleChange(0.1)}
+              className="h-8 w-8 p-0"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         <div className="text-center">
           <canvas
             ref={canvasRef}
@@ -160,7 +233,7 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
             height={canvasSize.height}
             onClick={handleCanvasClick}
             className={`border border-slate-200 rounded-lg shadow-sm max-w-full ${
-              state.mode === 'plot' ? 'cursor-crosshair' : 'cursor-default'
+              state.mode === 'plot' ? 'cursor-crosshair' : 'cursor-pointer'
             }`}
             style={{ maxWidth: '100%', height: 'auto' }}
           />
@@ -175,6 +248,12 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
         {state.center && (
           <div className="text-center text-sm text-green-700 font-medium">
             ✓ Center point calculated and marked in red
+          </div>
+        )}
+
+        {state.overlayImage && (
+          <div className="text-center text-sm text-slate-600">
+            Click on the overlay image to select and resize it
           </div>
         )}
       </div>
