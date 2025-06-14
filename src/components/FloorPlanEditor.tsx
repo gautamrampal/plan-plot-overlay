@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
@@ -147,41 +146,37 @@ export const FloorPlanEditor = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 space-y-6">
-        <Toolbar
-          mode={state.mode}
-          onModeChange={handleModeChange}
-          onComplete={handlePointsComplete}
-          onClear={handleClearPoints}
-          onOverlayUpload={handleOverlayUpload}
-          opacity={state.overlayOpacity}
-          onOpacityChange={handleOpacityChange}
-          hasPoints={state.points.length > 0}
-          hasOverlay={!!state.overlayImage}
-        />
-        
-        <FloorPlanCanvas
-          state={state}
-          onPointAdd={handlePointAdd}
-        />
-      </div>
+    <div className="space-y-6">
+      <Toolbar
+        mode={state.mode}
+        onModeChange={handleModeChange}
+        onComplete={handlePointsComplete}
+        onClear={handleClearPoints}
+        onOverlayUpload={handleOverlayUpload}
+        opacity={state.overlayOpacity}
+        onOpacityChange={handleOpacityChange}
+        hasPoints={state.points.length > 0}
+        hasOverlay={!!state.overlayImage}
+      />
+      
+      <FloorPlanCanvas
+        state={state}
+        onPointAdd={handlePointAdd}
+      />
 
       {state.overlayImage && (
-        <div className="lg:col-span-1">
-          <OverlayControls
-            isVisible={state.overlayVisible}
-            rotation={state.overlayRotation}
-            scale={state.overlayScale}
-            opacity={state.overlayOpacity}
-            onRotationChange={handleRotationChange}
-            onScaleChange={handleScaleChange}
-            onOpacityChange={handleOpacityChange}
-            displayOptions={state.displayOptions}
-            onDisplayOptionChange={handleDisplayOptionChange}
-            onToggleOverlay={handleToggleOverlay}
-          />
-        </div>
+        <OverlayControls
+          isVisible={state.overlayVisible}
+          rotation={state.overlayRotation}
+          scale={state.overlayScale}
+          opacity={state.overlayOpacity}
+          onRotationChange={handleRotationChange}
+          onScaleChange={handleScaleChange}
+          onOpacityChange={handleOpacityChange}
+          displayOptions={state.displayOptions}
+          onDisplayOptionChange={handleDisplayOptionChange}
+          onToggleOverlay={handleToggleOverlay}
+        />
       )}
     </div>
   );
