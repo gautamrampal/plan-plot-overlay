@@ -66,11 +66,9 @@ export const FloorPlanCanvas = ({ state, onPointAdd }: FloorPlanCanvasProps) => 
             ctx.save();
             ctx.globalAlpha = state.overlayOpacity;
 
-            // Scale overlay to be proportional to floor plan with user scaling
-            const baseOverlayScale = Math.min(scaledWidth, scaledHeight) * 0.3;
-            const finalOverlayScale = baseOverlayScale * state.overlayScale;
-            const overlayWidth = finalOverlayScale;
-            const overlayHeight = (overlayImg.height / overlayImg.width) * finalOverlayScale;
+            // Use actual image dimensions with user scaling
+            const overlayWidth = overlayImg.width * state.overlayScale;
+            const overlayHeight = overlayImg.height * state.overlayScale;
 
             // Center the overlay on the calculated center point
             const overlayX = state.center.x - overlayWidth / 2;
