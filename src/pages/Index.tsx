@@ -40,10 +40,12 @@ const Index = () => {
       
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">Floor Plan Analysis</h2>
-            <p className="text-lg text-slate-600">Upload, analyze, and enhance your floor plans with Vastu principles</p>
-          </div>
+          {!floorPlanUploaded && (
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-slate-800 mb-2">Floor Plan Analysis</h2>
+              <p className="text-lg text-slate-600">Upload, analyze, and enhance your floor plans with Vastu principles</p>
+            </div>
+          )}
           <FloorPlanEditor 
             onFloorPlanUpload={handleFloorPlanUpload}
             forceShowUploader={!floorPlanUploaded}
