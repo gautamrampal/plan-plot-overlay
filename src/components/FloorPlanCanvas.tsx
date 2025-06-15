@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       height: number;
     } | null>(null);
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [floorPlanImg, setFloorPlanImg] = useState<HTMLImageElement | null>(null);
 
     // Expose canvas ref to parent component
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
@@ -42,6 +42,29 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       return () => window.removeEventListener('resize', updateSize);
     }, []);
 
+    // Load floor plan image
+    useEffect(() => {
+      if (state.floorPlanImage) {
+        console.log('Loading floor plan image:', state.floorPlanImage);
+        const img = new Image();
+        img.onload = () => {
+          console.log('Floor plan image loaded successfully');
+          setFloorPlanImg(img);
+          setImageLoaded(true);
+        };
+        img.onerror = () => {
+          console.error('Failed to load floor plan image');
+          setImageLoaded(false);
+          setFloorPlanImg(null);
+        };
+        img.src = state.floorPlanImage;
+      } else {
+        setImageLoaded(false);
+        setFloorPlanImg(null);
+      }
+    }, [state.floorPlanImage]);
+
+    // Draw canvas
     useEffect(() => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -52,136 +75,122 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw floor plan image
-      if (state.floorPlanImage) {
-        console.log('Drawing floor plan image:', state.floorPlanImage);
-        const img = new Image();
-        img.onload = () => {
-          console.log('Floor plan image loaded successfully');
-          setImageLoaded(true);
-          
-          // Calculate scaling to fit canvas while maintaining aspect ratio
-          const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-          const scaledWidth = img.width * scale;
-          const scaledHeight = img.height * scale;
-          const offsetX = (canvas.width - scaledWidth) / 2;
-          const offsetY = (canvas.height - scaledHeight) / 2;
-
-          // Draw the floor plan image
-          ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-
-          // Draw overlay image if present and visible
-          if (state.overlayImage && state.center && state.overlayVisible) {
-            const overlayImg = new Image();
-            overlayImg.onload = () => {
-              ctx.save();
-              ctx.globalAlpha = state.overlayOpacity;
-
-              // Use actual image dimensions with user scaling
-              const overlayWidth = overlayImg.width * state.overlayScale;
-              const overlayHeight = overlayImg.height * state.overlayScale;
-
-              // Center the overlay on the calculated center point
-              const overlayX = state.center.x - overlayWidth / 2;
-              const overlayY = state.center.y - overlayHeight / 2;
-
-              // Apply rotation
-              ctx.translate(state.center.x, state.center.y);
-              ctx.rotate((state.overlayRotation * Math.PI) / 180);
-              ctx.translate(-state.center.x, -state.center.y);
-
-              ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
-
-              // Store overlay bounds for selection detection (before rotation)
-              setOverlayBounds({
-                x: overlayX,
-                y: overlayY,
-                width: overlayWidth,
-                height: overlayHeight,
-              });
-
-              // Draw selection border if overlay is selected
-              if (overlaySelected) {
-                ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.strokeRect(overlayX - 2, overlayY - 2, overlayWidth + 4, overlayHeight + 4);
-                ctx.setLineDash([]);
-              }
-
-              ctx.restore();
-            };
-            overlayImg.onerror = () => {
-              console.error('Failed to load overlay image');
-            };
-            overlayImg.src = state.overlayImage;
-          }
-
-          // Draw connection lines between points
-          if (state.points.length > 1) {
-            ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            
-            ctx.beginPath();
-            ctx.moveTo(state.points[0].x, state.points[0].y);
-            
-            for (let i = 1; i < state.points.length; i++) {
-              ctx.lineTo(state.points[i].x, state.points[i].y);
-            }
-            
-            // Connect back to first point if we have more than 2 points
-            if (state.points.length > 2) {
-              ctx.lineTo(state.points[0].x, state.points[0].y);
-            }
-            
-            ctx.stroke();
-            ctx.setLineDash([]);
-          }
-
-          // Draw plotted points
-          state.points.forEach((point, index) => {
-            ctx.fillStyle = '#3b82f6';
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Draw point number
-            ctx.fillStyle = 'white';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText((index + 1).toString(), point.x, point.y + 4);
-          });
-
-          // Draw center point
-          if (state.center) {
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(state.center.x, state.center.y, 8, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Draw center cross
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(state.center.x - 6, state.center.y);
-            ctx.lineTo(state.center.x + 6, state.center.y);
-            ctx.moveTo(state.center.x, state.center.y - 6);
-            ctx.lineTo(state.center.x, state.center.y + 6);
-            ctx.stroke();
-          }
-        };
+      // Draw floor plan image if loaded
+      if (floorPlanImg && imageLoaded) {
+        console.log('Drawing floor plan image on canvas');
         
-        img.onerror = () => {
-          console.error('Failed to load floor plan image');
-          setImageLoaded(false);
-        };
-        
-        img.src = state.floorPlanImage;
-      } else {
-        setImageLoaded(false);
+        // Calculate scaling to fit canvas while maintaining aspect ratio
+        const scale = Math.min(canvas.width / floorPlanImg.width, canvas.height / floorPlanImg.height);
+        const scaledWidth = floorPlanImg.width * scale;
+        const scaledHeight = floorPlanImg.height * scale;
+        const offsetX = (canvas.width - scaledWidth) / 2;
+        const offsetY = (canvas.height - scaledHeight) / 2;
+
+        // Draw the floor plan image
+        ctx.drawImage(floorPlanImg, offsetX, offsetY, scaledWidth, scaledHeight);
+
+        // Draw overlay image if present and visible
+        if (state.overlayImage && state.center && state.overlayVisible) {
+          const overlayImg = new Image();
+          overlayImg.onload = () => {
+            ctx.save();
+            ctx.globalAlpha = state.overlayOpacity;
+
+            // Use actual image dimensions with user scaling
+            const overlayWidth = overlayImg.width * state.overlayScale;
+            const overlayHeight = overlayImg.height * state.overlayScale;
+
+            // Center the overlay on the calculated center point
+            const overlayX = state.center.x - overlayWidth / 2;
+            const overlayY = state.center.y - overlayHeight / 2;
+
+            // Apply rotation
+            ctx.translate(state.center.x, state.center.y);
+            ctx.rotate((state.overlayRotation * Math.PI) / 180);
+            ctx.translate(-state.center.x, -state.center.y);
+
+            ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
+
+            // Store overlay bounds for selection detection (before rotation)
+            setOverlayBounds({
+              x: overlayX,
+              y: overlayY,
+              width: overlayWidth,
+              height: overlayHeight,
+            });
+
+            // Draw selection border if overlay is selected
+            if (overlaySelected) {
+              ctx.strokeStyle = '#3b82f6';
+              ctx.lineWidth = 2;
+              ctx.setLineDash([5, 5]);
+              ctx.strokeRect(overlayX - 2, overlayY - 2, overlayWidth + 4, overlayHeight + 4);
+              ctx.setLineDash([]);
+            }
+
+            ctx.restore();
+          };
+          overlayImg.onerror = () => {
+            console.error('Failed to load overlay image');
+          };
+          overlayImg.src = state.overlayImage;
+        }
       }
-    }, [state, overlaySelected]);
+
+      // Draw connection lines between points
+      if (state.points.length > 1) {
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        
+        ctx.beginPath();
+        ctx.moveTo(state.points[0].x, state.points[0].y);
+        
+        for (let i = 1; i < state.points.length; i++) {
+          ctx.lineTo(state.points[i].x, state.points[i].y);
+        }
+        
+        // Connect back to first point if we have more than 2 points
+        if (state.points.length > 2) {
+          ctx.lineTo(state.points[0].x, state.points[0].y);
+        }
+        
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Draw plotted points
+      state.points.forEach((point, index) => {
+        ctx.fillStyle = '#3b82f6';
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Draw point number
+        ctx.fillStyle = 'white';
+        ctx.font = '12px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText((index + 1).toString(), point.x, point.y + 4);
+      });
+
+      // Draw center point
+      if (state.center) {
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(state.center.x, state.center.y, 8, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Draw center cross
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(state.center.x - 6, state.center.y);
+        ctx.lineTo(state.center.x + 6, state.center.y);
+        ctx.moveTo(state.center.x, state.center.y - 6);
+        ctx.lineTo(state.center.x, state.center.y + 6);
+        ctx.stroke();
+      }
+    }, [floorPlanImg, imageLoaded, state.points, state.center, state.overlayImage, state.overlayVisible, state.overlayOpacity, state.overlayRotation, state.overlayScale, overlaySelected]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
