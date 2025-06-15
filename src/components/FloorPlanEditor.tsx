@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
@@ -136,23 +135,36 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         ...prev,
         displayOptions: {
           ...prev.displayOptions,
-          [option]: value,
         },
       };
 
-      // Handle directions overlay
-      if (option === 'directions') {
-        if (value) {
-          // Enable directions - set the overlay image
+      if (value) {
+        // Disable all other display options when enabling one
+        Object.keys(newState.displayOptions).forEach(key => {
+          newState.displayOptions[key as keyof typeof newState.displayOptions] = key === option;
+        });
+
+        // Set the appropriate overlay image based on the selected option
+        if (option === 'directions') {
           newState.overlayImage = '/lovable-uploads/908ba2e8-f456-48c1-ac55-63fe60118d79.png';
           newState.overlayVisible = true;
           toast.success('Directions compass overlay enabled!');
+        } else if (option === 'chakra') {
+          newState.overlayImage = '/lovable-uploads/31a3f34b-1195-4cbd-bb55-0029bc57c4cb.png';
+          newState.overlayVisible = true;
+          toast.success('Chakra compass overlay enabled!');
         } else {
-          // Disable directions - remove overlay
+          // For other options that don't have overlay images yet
           newState.overlayImage = null;
           newState.overlayVisible = false;
-          toast.info('Directions compass overlay disabled');
+          toast.success(`${option.charAt(0).toUpperCase() + option.slice(1)} display enabled!`);
         }
+      } else {
+        // Disable the option and remove overlay
+        newState.displayOptions[option as keyof typeof newState.displayOptions] = false;
+        newState.overlayImage = null;
+        newState.overlayVisible = false;
+        toast.info(`${option.charAt(0).toUpperCase() + option.slice(1)} display disabled`);
       }
 
       return newState;

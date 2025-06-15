@@ -46,6 +46,13 @@ export const OverlayControls = ({
     onRotationChange(newRotation < 0 ? newRotation + 360 : newRotation);
   };
 
+  // Get the active overlay type for the label
+  const getActiveOverlayType = () => {
+    if (displayOptions.directions) return 'Directions';
+    if (displayOptions.chakra) return 'Chakra';
+    return 'Overlay';
+  };
+
   return (
     <Card className="p-6 space-y-6">
       <div className="text-center">
@@ -59,7 +66,7 @@ export const OverlayControls = ({
         {/* Overlay Controls - Show above display options if there's an overlay */}
         {hasOverlay && (
           <div className="space-y-4">
-            <Label className="text-sm font-medium">Directions Compass Controls</Label>
+            <Label className="text-sm font-medium">{getActiveOverlayType()} Compass Controls</Label>
             
             {/* Rotation Control */}
             <div className="space-y-3">
