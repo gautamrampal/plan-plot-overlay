@@ -44,9 +44,9 @@ export const FloorPlanEditor = () => {
     overlayRotation: 0,
     overlayScale: 1,
     displayOptions: {
-      directions: true,
+      directions: false,
       entrances: false,
-      chakra: true,
+      chakra: false,
       planets: false,
       vastu: false,
       analysis: false,
@@ -74,14 +74,6 @@ export const FloorPlanEditor = () => {
       center: null,
     }));
     toast.success('Floor plan uploaded successfully!');
-  };
-
-  const handleOverlayUpload = (imageUrl: string) => {
-    setState(prev => ({
-      ...prev,
-      overlayImage: imageUrl,
-    }));
-    toast.success('Overlay image uploaded successfully!');
   };
 
   const handlePointAdd = (point: Point) => {
@@ -132,13 +124,32 @@ export const FloorPlanEditor = () => {
   };
 
   const handleDisplayOptionChange = (option: string, value: boolean) => {
-    setState(prev => ({
-      ...prev,
-      displayOptions: {
-        ...prev.displayOptions,
-        [option]: value,
-      },
-    }));
+    setState(prev => {
+      const newState = {
+        ...prev,
+        displayOptions: {
+          ...prev.displayOptions,
+          [option]: value,
+        },
+      };
+
+      // Handle chakra overlay
+      if (option === 'chakra') {
+        if (value) {
+          // Enable chakra - set the overlay image
+          newState.overlayImage = '/lovable-uploads/31a3f34b-1195-4cbd-bb55-0029bc57c4cb.png';
+          newState.overlayVisible = true;
+          toast.success('Chakra compass overlay enabled!');
+        } else {
+          // Disable chakra - remove overlay
+          newState.overlayImage = null;
+          newState.overlayVisible = false;
+          toast.info('Chakra compass overlay disabled');
+        }
+      }
+
+      return newState;
+    });
   };
 
   if (!state.floorPlanImage) {
@@ -151,7 +162,6 @@ export const FloorPlanEditor = () => {
         mode={state.mode}
         onModeChange={handleModeChange}
         onClear={handleClearPoints}
-        onOverlayUpload={handleOverlayUpload}
         opacity={state.overlayOpacity}
         onOpacityChange={handleOpacityChange}
         hasPoints={state.points.length > 0}
@@ -163,20 +173,19 @@ export const FloorPlanEditor = () => {
         onPointAdd={handlePointAdd}
       />
 
-      {state.overlayImage && (
-        <OverlayControls
-          isVisible={state.overlayVisible}
-          rotation={state.overlayRotation}
-          scale={state.overlayScale}
-          opacity={state.overlayOpacity}
-          onRotationChange={handleRotationChange}
-          onScaleChange={handleScaleChange}
-          onOpacityChange={handleOpacityChange}
-          displayOptions={state.displayOptions}
-          onDisplayOptionChange={handleDisplayOptionChange}
-          onToggleOverlay={handleToggleOverlay}
-        />
-      )}
+      <OverlayControls
+        isVisible={state.overlayVisible}
+        rotation={state.overlayRotation}
+        scale={state.overlayScale}
+        opacity={state.overlayOpacity}
+        onRotationChange={handleRotationChange}
+        onScaleChange={handleScaleChange}
+        onOpacityChange={handleOpacityChange}
+        displayOptions={state.displayOptions}
+        onDisplayOptionChange={handleDisplayOptionChange}
+        onToggleOverlay={handleToggleOverlay}
+        hasOverlay={!!state.overlayImage}
+      />
     </div>
   );
 };
