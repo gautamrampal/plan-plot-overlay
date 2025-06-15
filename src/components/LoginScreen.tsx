@@ -40,9 +40,9 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-slate-800">
-            Floor Plan Editor
+            Vastu Tool Kit
           </CardTitle>
-          <p className="text-slate-600 mt-2">Sign in to access the editor</p>
+          <p className="text-slate-600 mt-2">Sign in to access the tool kit</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,14 +84,6 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
-
-          <div className="mt-6 p-3 bg-slate-100 rounded-md">
-            <p className="text-sm text-slate-600 text-center">
-              <strong>Demo Credentials:</strong><br />
-              Username: admin<br />
-              Password: admin
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
