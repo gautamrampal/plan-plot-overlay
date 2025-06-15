@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
@@ -139,18 +140,18 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         },
       };
 
-      // Handle chakra overlay
-      if (option === 'chakra') {
+      // Handle directions overlay
+      if (option === 'directions') {
         if (value) {
-          // Enable chakra - set the overlay image
-          newState.overlayImage = '/lovable-uploads/31a3f34b-1195-4cbd-bb55-0029bc57c4cb.png';
+          // Enable directions - set the overlay image
+          newState.overlayImage = '/lovable-uploads/908ba2e8-f456-48c1-ac55-63fe60118d79.png';
           newState.overlayVisible = true;
-          toast.success('Chakra compass overlay enabled!');
+          toast.success('Directions compass overlay enabled!');
         } else {
-          // Disable chakra - remove overlay
+          // Disable directions - remove overlay
           newState.overlayImage = null;
           newState.overlayVisible = false;
-          toast.info('Chakra compass overlay disabled');
+          toast.info('Directions compass overlay disabled');
         }
       }
 

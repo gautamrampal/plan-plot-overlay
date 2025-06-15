@@ -59,7 +59,7 @@ export const OverlayControls = ({
         {/* Overlay Controls - Show above display options if there's an overlay */}
         {hasOverlay && (
           <div className="space-y-4">
-            <Label className="text-sm font-medium">Chakra Compass Controls</Label>
+            <Label className="text-sm font-medium">Directions Compass Controls</Label>
             
             {/* Rotation Control */}
             <div className="space-y-3">
@@ -156,7 +156,7 @@ export const OverlayControls = ({
           </div>
         )}
 
-        {/* Display Options - Now below chakra controls */}
+        {/* Display Options - Now below compass controls */}
         <div className={`space-y-4 ${hasOverlay ? 'border-t pt-4' : ''}`}>
           <Label className="text-sm font-medium">Display Features</Label>
           
