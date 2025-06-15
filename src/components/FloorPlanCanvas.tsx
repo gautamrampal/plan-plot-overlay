@@ -27,6 +27,30 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     // Expose canvas ref to parent component
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
 
+    // Calculate the bounding box of all plot points
+    const calculatePlotBounds = (points: Point[]) => {
+      if (points.length === 0) return null;
+      
+      const xs = points.map(p => p.x);
+      const ys = points.map(p => p.y);
+      
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      
+      return {
+        minX,
+        maxX,
+        minY,
+        maxY,
+        width: maxX - minX,
+        height: maxY - minY,
+        centerX: (minX + maxX) / 2,
+        centerY: (minY + maxY) / 2
+      };
+    };
+
     useEffect(() => {
       const updateSize = () => {
         if (containerRef.current) {
@@ -90,50 +114,70 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.drawImage(floorPlanImg, offsetX, offsetY, scaledWidth, scaledHeight);
 
         // Draw overlay image if present and visible
-        if (state.overlayImage && state.center && state.overlayVisible) {
-          const overlayImg = new Image();
-          overlayImg.onload = () => {
-            ctx.save();
-            ctx.globalAlpha = state.overlayOpacity;
+        if (state.overlayImage && state.center && state.overlayVisible && state.points.length >= 3) {
+          const plotBounds = calculatePlotBounds(state.points);
+          
+          if (plotBounds) {
+            const overlayImg = new Image();
+            overlayImg.onload = () => {
+              ctx.save();
+              ctx.globalAlpha = state.overlayOpacity;
 
-            // Use actual image dimensions with user scaling
-            const overlayWidth = overlayImg.width * state.overlayScale;
-            const overlayHeight = overlayImg.height * state.overlayScale;
+              // Calculate overlay size to fit within plot bounds
+              // Use 80% of the smaller dimension to ensure it fits nicely inside
+              const maxSize = Math.min(plotBounds.width, plotBounds.height) * 0.8;
+              
+              // Maintain aspect ratio of the overlay image
+              const overlayAspectRatio = overlayImg.width / overlayImg.height;
+              let overlayWidth, overlayHeight;
+              
+              if (overlayAspectRatio > 1) {
+                overlayWidth = maxSize;
+                overlayHeight = maxSize / overlayAspectRatio;
+              } else {
+                overlayHeight = maxSize;
+                overlayWidth = maxSize * overlayAspectRatio;
+              }
 
-            // Center the overlay on the calculated center point
-            const overlayX = state.center.x - overlayWidth / 2;
-            const overlayY = state.center.y - overlayHeight / 2;
+              // Apply user scaling on top of the calculated size
+              overlayWidth *= state.overlayScale;
+              overlayHeight *= state.overlayScale;
 
-            // Apply rotation
-            ctx.translate(state.center.x, state.center.y);
-            ctx.rotate((state.overlayRotation * Math.PI) / 180);
-            ctx.translate(-state.center.x, -state.center.y);
+              // Center the overlay exactly on the center point (not plot bounds center)
+              const overlayX = state.center.x - overlayWidth / 2;
+              const overlayY = state.center.y - overlayHeight / 2;
 
-            ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
+              // Apply rotation around the center point
+              ctx.translate(state.center.x, state.center.y);
+              ctx.rotate((state.overlayRotation * Math.PI) / 180);
+              ctx.translate(-state.center.x, -state.center.y);
 
-            // Store overlay bounds for selection detection (before rotation)
-            setOverlayBounds({
-              x: overlayX,
-              y: overlayY,
-              width: overlayWidth,
-              height: overlayHeight,
-            });
+              ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
 
-            // Draw selection border if overlay is selected
-            if (overlaySelected) {
-              ctx.strokeStyle = '#3b82f6';
-              ctx.lineWidth = 2;
-              ctx.setLineDash([5, 5]);
-              ctx.strokeRect(overlayX - 2, overlayY - 2, overlayWidth + 4, overlayHeight + 4);
-              ctx.setLineDash([]);
-            }
+              // Store overlay bounds for selection detection (before rotation)
+              setOverlayBounds({
+                x: overlayX,
+                y: overlayY,
+                width: overlayWidth,
+                height: overlayHeight,
+              });
 
-            ctx.restore();
-          };
-          overlayImg.onerror = () => {
-            console.error('Failed to load overlay image');
-          };
-          overlayImg.src = state.overlayImage;
+              // Draw selection border if overlay is selected
+              if (overlaySelected) {
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(overlayX - 2, overlayY - 2, overlayWidth + 4, overlayHeight + 4);
+                ctx.setLineDash([]);
+              }
+
+              ctx.restore();
+            };
+            overlayImg.onerror = () => {
+              console.error('Failed to load overlay image');
+            };
+            overlayImg.src = state.overlayImage;
+          }
         }
       }
 
