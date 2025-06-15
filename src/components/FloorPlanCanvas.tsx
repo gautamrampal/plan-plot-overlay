@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       width: number;
       height: number;
     } | null>(null);
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     // Expose canvas ref to parent component
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
@@ -52,8 +54,12 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
 
       // Draw floor plan image
       if (state.floorPlanImage) {
+        console.log('Drawing floor plan image:', state.floorPlanImage);
         const img = new Image();
         img.onload = () => {
+          console.log('Floor plan image loaded successfully');
+          setImageLoaded(true);
+          
           // Calculate scaling to fit canvas while maintaining aspect ratio
           const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
           const scaledWidth = img.width * scale;
@@ -61,6 +67,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
           const offsetX = (canvas.width - scaledWidth) / 2;
           const offsetY = (canvas.height - scaledHeight) / 2;
 
+          // Draw the floor plan image
           ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
 
           // Draw overlay image if present and visible
@@ -103,6 +110,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               }
 
               ctx.restore();
+            };
+            overlayImg.onerror = () => {
+              console.error('Failed to load overlay image');
             };
             overlayImg.src = state.overlayImage;
           }
@@ -161,7 +171,15 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             ctx.stroke();
           }
         };
+        
+        img.onerror = () => {
+          console.error('Failed to load floor plan image');
+          setImageLoaded(false);
+        };
+        
         img.src = state.floorPlanImage;
+      } else {
+        setImageLoaded(false);
       }
     }, [state, overlaySelected]);
 
@@ -224,6 +242,18 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               style={{ maxWidth: '100%', height: 'auto' }}
             />
           </div>
+
+          {state.floorPlanImage && !imageLoaded && (
+            <div className="text-center text-sm text-orange-600">
+              Loading floor plan image...
+            </div>
+          )}
+
+          {state.floorPlanImage && imageLoaded && (
+            <div className="text-center text-sm text-green-700 font-medium">
+              ✓ Floor plan loaded successfully
+            </div>
+          )}
           
           {state.mode === 'plot' && (
             <div className="text-center text-sm text-slate-600">
