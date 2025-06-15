@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
 import { MousePointer, Plus } from 'lucide-react';
 import { FloorPlanState } from './FloorPlanEditor';
 
@@ -20,10 +19,7 @@ export const Toolbar = ({
   mode,
   onModeChange,
   onClear,
-  opacity,
-  onOpacityChange,
   hasPoints,
-  hasOverlay,
 }: ToolbarProps) => {
   return (
     <Card className="p-4">
@@ -57,21 +53,6 @@ export const Toolbar = ({
             </Button>
           )}
         </div>
-
-        {hasOverlay && (
-          <div className="flex items-center gap-2 min-w-[200px]">
-            <span className="text-sm text-slate-600 whitespace-nowrap">Opacity:</span>
-            <Slider
-              value={[opacity]}
-              onValueChange={(value) => onOpacityChange(value[0])}
-              max={1}
-              min={0}
-              step={0.1}
-              className="flex-1"
-            />
-            <span className="text-sm text-slate-600 w-8">{Math.round(opacity * 100)}%</span>
-          </div>
-        )}
       </div>
     </Card>
   );
