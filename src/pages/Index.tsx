@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [floorPlanUploaded, setFloorPlanUploaded] = useState(false);
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -14,6 +15,15 @@ const Index = () => {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    setFloorPlanUploaded(false);
+  };
+
+  const handleFloorPlanUpload = () => {
+    setFloorPlanUploaded(true);
+  };
+
+  const handleReUpload = () => {
+    setFloorPlanUploaded(false);
   };
 
   if (!isLoggedIn) {
@@ -22,7 +32,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
-      <Header onLogout={handleLogout} />
+      <Header 
+        onLogout={handleLogout} 
+        onReUpload={handleReUpload}
+        showReUpload={floorPlanUploaded}
+      />
       
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8">
@@ -30,7 +44,10 @@ const Index = () => {
             <h2 className="text-3xl font-bold text-slate-800 mb-2">Floor Plan Analysis</h2>
             <p className="text-lg text-slate-600">Upload, analyze, and enhance your floor plans with Vastu principles</p>
           </div>
-          <FloorPlanEditor />
+          <FloorPlanEditor 
+            onFloorPlanUpload={handleFloorPlanUpload}
+            forceShowUploader={!floorPlanUploaded}
+          />
         </div>
       </main>
       

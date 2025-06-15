@@ -31,7 +31,12 @@ export interface FloorPlanState {
   };
 }
 
-export const FloorPlanEditor = () => {
+interface FloorPlanEditorProps {
+  onFloorPlanUpload?: () => void;
+  forceShowUploader?: boolean;
+}
+
+export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }: FloorPlanEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<FloorPlanState>({
     floorPlanImage: null,
@@ -74,6 +79,7 @@ export const FloorPlanEditor = () => {
       center: null,
     }));
     toast.success('Floor plan uploaded successfully!');
+    onFloorPlanUpload?.();
   };
 
   const handlePointAdd = (point: Point) => {
@@ -177,7 +183,7 @@ export const FloorPlanEditor = () => {
     }
   };
 
-  if (!state.floorPlanImage) {
+  if (!state.floorPlanImage || forceShowUploader) {
     return <ImageUploader onImageUpload={handleFloorPlanUpload} title="Upload Floor Plan" />;
   }
 
