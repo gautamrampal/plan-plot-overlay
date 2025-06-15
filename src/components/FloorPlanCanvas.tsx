@@ -51,6 +51,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       };
     };
 
+    // ... keep existing code (useEffect for size updates and image loading)
+
     useEffect(() => {
       const updateSize = () => {
         if (containerRef.current) {
@@ -123,9 +125,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               ctx.save();
               ctx.globalAlpha = state.overlayOpacity;
 
-              // Calculate overlay size to fit within plot bounds
-              // Use 80% of the smaller dimension to ensure it fits nicely inside
-              const maxSize = Math.min(plotBounds.width, plotBounds.height) * 0.8;
+              // Calculate overlay size to fit exactly within plot bounds (100% of boundary)
+              const maxSize = Math.min(plotBounds.width, plotBounds.height);
               
               // Maintain aspect ratio of the overlay image
               const overlayAspectRatio = overlayImg.width / overlayImg.height;
