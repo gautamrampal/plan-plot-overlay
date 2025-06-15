@@ -1,8 +1,10 @@
+
 import React, { useState, useRef } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
 import { Toolbar } from './Toolbar';
 import { OverlayControls } from './OverlayControls';
+import { VastuAnalysisChart } from './VastuAnalysisChart';
 import { toast } from 'sonner';
 
 export interface Point {
@@ -153,6 +155,11 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
           newState.overlayImage = '/lovable-uploads/31a3f34b-1195-4cbd-bb55-0029bc57c4cb.png';
           newState.overlayVisible = true;
           toast.success('Chakra compass overlay enabled!');
+        } else if (option === 'analysis') {
+          // For analysis, we don't need an overlay image
+          newState.overlayImage = null;
+          newState.overlayVisible = false;
+          toast.success('Vastu analysis chart enabled!');
         } else {
           // For other options that don't have overlay images yet
           newState.overlayImage = null;
@@ -218,6 +225,11 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         state={state}
         onPointAdd={handlePointAdd}
       />
+
+      {/* Show analysis chart when analysis is selected */}
+      {state.displayOptions.analysis && (
+        <VastuAnalysisChart />
+      )}
 
       <OverlayControls
         isVisible={state.overlayVisible}
