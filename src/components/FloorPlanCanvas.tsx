@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -155,7 +154,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               const overlayX = centerX - overlayWidth / 2;
               const overlayY = centerY - overlayHeight / 2;
 
-              // Apply rotation around the center point
+              // Apply rotation around the center point - ONLY for the overlay image
               ctx.translate(centerX, centerY);
               ctx.rotate((state.overlayRotation * Math.PI) / 180);
               ctx.translate(-centerX, -centerY);
@@ -358,9 +357,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               }`}
               style={{ 
                 maxWidth: '100%', 
-                height: 'auto',
-                transform: `rotate(${state.overlayRotation}deg)`,
-                transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+                height: 'auto'
               }}
             />
           </div>
