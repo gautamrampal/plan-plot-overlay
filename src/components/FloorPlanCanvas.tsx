@@ -258,33 +258,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             </div>
           )}
 
-          {state.floorPlanImage && imageLoaded && (
-            <div className="text-center text-sm text-green-700 font-medium">
-              ✓ Floor plan loaded successfully
-            </div>
-          )}
-          
-          {state.mode === 'plot' && (
-            <div className="text-center text-sm text-slate-600">
-              Click on the floor plan to plot corner points. Points plotted: {state.points.length}
-            </div>
-          )}
-          
-          {state.center && (
-            <div className="text-center text-sm text-green-700 font-medium">
-              ✓ Center point calculated and marked in red
-            </div>
-          )}
-
           {state.overlayImage && !state.overlayVisible && (
             <div className="text-center text-sm text-orange-600">
               Overlay is hidden - use controls to show it
-            </div>
-          )}
-
-          {state.overlayImage && state.overlayVisible && (
-            <div className="text-center text-sm text-slate-600">
-              Click on the overlay image to select it
             </div>
           )}
         </div>
