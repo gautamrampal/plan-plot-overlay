@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MousePointer, Plus } from 'lucide-react';
+import { MousePointer, Plus, Download } from 'lucide-react';
 import { FloorPlanState } from './FloorPlanEditor';
 
 interface ToolbarProps {
@@ -13,6 +13,7 @@ interface ToolbarProps {
   onOpacityChange: (opacity: number) => void;
   hasPoints: boolean;
   hasOverlay: boolean;
+  onExport: () => void;
 }
 
 export const Toolbar = ({
@@ -20,6 +21,7 @@ export const Toolbar = ({
   onModeChange,
   onClear,
   hasPoints,
+  onExport,
 }: ToolbarProps) => {
   return (
     <Card className="p-4">
@@ -53,6 +55,15 @@ export const Toolbar = ({
             </Button>
           )}
         </div>
+
+        <Button
+          variant="secondary"
+          onClick={onExport}
+          size="sm"
+        >
+          <Download className="w-4 h-4 mr-2" />
+          Export Image
+        </Button>
       </div>
     </Card>
   );

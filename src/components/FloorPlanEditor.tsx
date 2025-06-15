@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
 import { Toolbar } from './Toolbar';
@@ -33,6 +32,7 @@ export interface FloorPlanState {
 }
 
 export const FloorPlanEditor = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<FloorPlanState>({
     floorPlanImage: null,
     overlayImage: null,
@@ -152,6 +152,31 @@ export const FloorPlanEditor = () => {
     });
   };
 
+  const handleExport = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      toast.error('No canvas found to export');
+      return;
+    }
+
+    try {
+      // Create a download link
+      const link = document.createElement('a');
+      link.download = `floor-plan-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast.success('Floor plan exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      toast.error('Failed to export floor plan');
+    }
+  };
+
   if (!state.floorPlanImage) {
     return <ImageUploader onImageUpload={handleFloorPlanUpload} title="Upload Floor Plan" />;
   }
@@ -166,9 +191,11 @@ export const FloorPlanEditor = () => {
         onOpacityChange={handleOpacityChange}
         hasPoints={state.points.length > 0}
         hasOverlay={!!state.overlayImage}
+        onExport={handleExport}
       />
       
       <FloorPlanCanvas
+        ref={canvasRef}
         state={state}
         onPointAdd={handlePointAdd}
       />
