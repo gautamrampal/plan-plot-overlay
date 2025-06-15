@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RotateCcw, RotateCw, Expand, ToggleLeft } from 'lucide-react';
+import { RotateCcw, RotateCw, Expand, ToggleLeft, Move } from 'lucide-react';
 
 interface OverlayControlsProps {
   isVisible: boolean;
@@ -66,7 +66,17 @@ export const OverlayControls = ({
         {/* Overlay Controls - Show above display options if there's an overlay */}
         {hasOverlay && (
           <div className="space-y-4">
-            <Label className="text-sm font-medium">{getActiveOverlayType()} Compass Controls</Label>
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Move className="w-4 h-4" />
+              {getActiveOverlayType()} Compass Controls
+            </Label>
+            
+            {/* Movement Instructions */}
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-700">
+                💡 <strong>Move:</strong> Click and drag the overlay on the canvas
+              </p>
+            </div>
             
             {/* Rotation Control */}
             <div className="space-y-3">
@@ -78,8 +88,9 @@ export const OverlayControls = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleRotationChange(-15)}
-                  className="h-8 w-8 p-0"
+                  onClick={() => handleRotationChange(-1)}
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
+                  title="Rotate -1°"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </Button>
@@ -89,15 +100,58 @@ export const OverlayControls = ({
                   max={360}
                   min={0}
                   step={1}
-                  className="flex-1"
+                  className="flex-1 transition-all duration-300"
                 />
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleRotationChange(15)}
-                  className="h-8 w-8 p-0"
+                  onClick={() => handleRotationChange(1)}
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
+                  title="Rotate +1°"
                 >
                   <RotateCw className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRotationChange(-15)}
+                  className="text-xs px-2 py-1 h-6 transition-all duration-200"
+                >
+                  -15°
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRotationChange(-5)}
+                  className="text-xs px-2 py-1 h-6 transition-all duration-200"
+                >
+                  -5°
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onRotationChange(0)}
+                  className="text-xs px-2 py-1 h-6 transition-all duration-200"
+                >
+                  Reset
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRotationChange(5)}
+                  className="text-xs px-2 py-1 h-6 transition-all duration-200"
+                >
+                  +5°
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRotationChange(15)}
+                  className="text-xs px-2 py-1 h-6 transition-all duration-200"
+                >
+                  +15°
                 </Button>
               </div>
             </div>
@@ -113,7 +167,7 @@ export const OverlayControls = ({
                   variant="outline"
                   size="sm"
                   onClick={() => onScaleChange(Math.max(0.1, scale - 0.1))}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
                 >
                   -
                 </Button>
@@ -123,13 +177,13 @@ export const OverlayControls = ({
                   max={5}
                   min={0.1}
                   step={0.1}
-                  className="flex-1"
+                  className="flex-1 transition-all duration-300"
                 />
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onScaleChange(Math.min(5, scale + 0.1))}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
                 >
                   <Expand className="w-4 h-4" />
                 </Button>
@@ -148,7 +202,7 @@ export const OverlayControls = ({
                 max={1}
                 min={0}
                 step={0.01}
-                className="w-full"
+                className="w-full transition-all duration-300"
               />
             </div>
 
@@ -158,6 +212,7 @@ export const OverlayControls = ({
               <Switch
                 checked={isVisible}
                 onCheckedChange={onToggleOverlay}
+                className="transition-all duration-200"
               />
             </div>
           </div>
@@ -177,6 +232,7 @@ export const OverlayControls = ({
                 <Switch
                   checked={value}
                   onCheckedChange={(checked) => onDisplayOptionChange(key, checked)}
+                  className="transition-all duration-200"
                 />
               </div>
             ))}

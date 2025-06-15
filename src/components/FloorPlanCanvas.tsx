@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,10 +8,11 @@ import { Plus, Minus } from 'lucide-react';
 interface FloorPlanCanvasProps {
   state: FloorPlanState;
   onPointAdd: (point: Point) => void;
+  onOverlayMove?: (x: number, y: number) => void;
 }
 
 export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProps>(
-  ({ state, onPointAdd }, ref) => {
+  ({ state, onPointAdd, onOverlayMove }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
@@ -23,6 +25,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     } | null>(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [floorPlanImg, setFloorPlanImg] = useState<HTMLImageElement | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
     // Expose canvas ref to parent component
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
@@ -144,14 +148,17 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               overlayWidth *= state.overlayScale;
               overlayHeight *= state.overlayScale;
 
-              // Center the overlay exactly on the center point (not plot bounds center)
-              const overlayX = state.center.x - overlayWidth / 2;
-              const overlayY = state.center.y - overlayHeight / 2;
+              // Use custom position if available, otherwise center on the center point
+              const centerX = state.overlayPosition?.x ?? state.center.x;
+              const centerY = state.overlayPosition?.y ?? state.center.y;
+              
+              const overlayX = centerX - overlayWidth / 2;
+              const overlayY = centerY - overlayHeight / 2;
 
               // Apply rotation around the center point
-              ctx.translate(state.center.x, state.center.y);
+              ctx.translate(centerX, centerY);
               ctx.rotate((state.overlayRotation * Math.PI) / 180);
-              ctx.translate(-state.center.x, -state.center.y);
+              ctx.translate(-centerX, -centerY);
 
               ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
 
@@ -235,7 +242,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.lineTo(state.center.x, state.center.y + 6);
         ctx.stroke();
       }
-    }, [floorPlanImg, imageLoaded, state.points, state.center, state.overlayImage, state.overlayVisible, state.overlayOpacity, state.overlayRotation, state.overlayScale, overlaySelected]);
+    }, [floorPlanImg, imageLoaded, state.points, state.center, state.overlayImage, state.overlayVisible, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, overlaySelected]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -272,6 +279,56 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       }
     };
 
+    const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!overlaySelected || !overlayBounds) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Check if mouse is over overlay
+      const clickedOnOverlay = 
+        x >= overlayBounds.x && 
+        x <= overlayBounds.x + overlayBounds.width &&
+        y >= overlayBounds.y && 
+        y <= overlayBounds.y + overlayBounds.height;
+
+      if (clickedOnOverlay) {
+        setIsDragging(true);
+        const centerX = state.overlayPosition?.x ?? state.center?.x ?? 0;
+        const centerY = state.overlayPosition?.y ?? state.center?.y ?? 0;
+        setDragOffset({
+          x: x - centerX,
+          y: y - centerY,
+        });
+        e.preventDefault();
+      }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (!isDragging || !onOverlayMove) return;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const newX = x - dragOffset.x;
+      const newY = y - dragOffset.y;
+
+      onOverlayMove(newX, newY);
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setDragOffset({ x: 0, y: 0 });
+    };
+
     return (
       <Card className="p-4" ref={containerRef}>
         <div className="space-y-4">
@@ -279,7 +336,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
               <span className="text-sm font-medium text-blue-800">Overlay Selected</span>
               <span className="text-xs text-blue-600">
-                Use the controls panel to adjust settings
+                Click and drag to move • Use controls to adjust rotation and scale
               </span>
             </div>
           )}
@@ -290,10 +347,21 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               width={canvasSize.width}
               height={canvasSize.height}
               onClick={handleCanvasClick}
-              className={`border border-slate-200 rounded-lg shadow-sm max-w-full ${
-                state.mode === 'plot' ? 'cursor-crosshair' : 'cursor-pointer'
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              className={`border border-slate-200 rounded-lg shadow-sm max-w-full transition-all duration-200 ${
+                state.mode === 'plot' ? 'cursor-crosshair' : 
+                overlaySelected && isDragging ? 'cursor-grabbing' :
+                overlaySelected ? 'cursor-grab' : 'cursor-pointer'
               }`}
-              style={{ maxWidth: '100%', height: 'auto' }}
+              style={{ 
+                maxWidth: '100%', 
+                height: 'auto',
+                transform: `rotate(${state.overlayRotation}deg)`,
+                transition: isDragging ? 'none' : 'transform 0.3s ease-out'
+              }}
             />
           </div>
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { ImageUploader } from './ImageUploader';
 import { FloorPlanCanvas } from './FloorPlanCanvas';
@@ -23,6 +22,7 @@ export interface FloorPlanState {
   overlayVisible: boolean;
   overlayRotation: number;
   overlayScale: number;
+  overlayPosition?: Point;
   displayOptions: {
     directions: boolean;
     entrances: boolean;
@@ -131,6 +131,13 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     setState(prev => ({ ...prev, overlayVisible: visible }));
   };
 
+  const handleOverlayMove = (x: number, y: number) => {
+    setState(prev => ({
+      ...prev,
+      overlayPosition: { x, y, id: 'overlay-position' },
+    }));
+  };
+
   const handleDisplayOptionChange = (option: string, value: boolean) => {
     setState(prev => {
       const newState = {
@@ -224,6 +231,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         ref={canvasRef}
         state={state}
         onPointAdd={handlePointAdd}
+        onOverlayMove={handleOverlayMove}
       />
 
       {/* Show analysis chart when analysis is selected */}
