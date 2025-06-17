@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
 
     // Expose canvas ref to parent component
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
+
+    // Check if points are finalized (3 or more points means plotting is complete)
+    const isPlottingComplete = state.points.length >= 3;
 
     // Calculate the bounding box of all plot points
     const calculatePlotBounds = (points: Point[]) => {
@@ -267,8 +271,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         }
       }
 
-      // Handle point plotting
-      if (state.mode === 'plot') {
+      // Handle point plotting - only allow if plotting is not complete
+      if (state.mode === 'plot' && !isPlottingComplete) {
         const newPoint: Point = {
           x,
           y,
@@ -340,6 +344,16 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             </div>
           )}
 
+          {/* Show message when plotting is complete */}
+          {isPlottingComplete && state.mode === 'plot' && (
+            <div className="flex items-center justify-center gap-2 p-2 bg-green-50 rounded-lg">
+              <span className="text-sm font-medium text-green-800">Plotting Complete</span>
+              <span className="text-xs text-green-600">
+                Plot points are finalized. Use "Clear Points" to start over.
+              </span>
+            </div>
+          )}
+
           <div className="text-center">
             <canvas
               ref={canvasRef}
@@ -351,7 +365,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
               className={`border border-slate-200 rounded-lg shadow-sm max-w-full transition-all duration-200 ${
-                state.mode === 'plot' ? 'cursor-crosshair' : 
+                state.mode === 'plot' && !isPlottingComplete ? 'cursor-crosshair' : 
                 overlaySelected && isDragging ? 'cursor-grabbing' :
                 overlaySelected ? 'cursor-grab' : 'cursor-pointer'
               }`}

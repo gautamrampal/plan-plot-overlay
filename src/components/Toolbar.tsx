@@ -25,6 +25,9 @@ export const Toolbar = ({
   onExport,
   onExportPDF,
 }: ToolbarProps) => {
+  // Check if plotting is complete (3 or more points)
+  const isPlottingComplete = hasPoints && mode === 'plot';
+
   return (
     <Card className="p-4">
       <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -42,9 +45,10 @@ export const Toolbar = ({
             variant={mode === 'plot' ? 'default' : 'outline'}
             onClick={() => onModeChange('plot')}
             size="sm"
+            disabled={isPlottingComplete}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Plot Points
+            {isPlottingComplete ? 'Plotting Complete' : 'Plot Points'}
           </Button>
 
           {hasPoints && (
