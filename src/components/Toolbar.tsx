@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MousePointer, Plus, Download } from 'lucide-react';
+import { MousePointer, Plus, Download, FileText } from 'lucide-react';
 import { FloorPlanState } from './FloorPlanEditor';
 
 interface ToolbarProps {
@@ -14,6 +14,7 @@ interface ToolbarProps {
   hasPoints: boolean;
   hasOverlay: boolean;
   onExport: () => void;
+  onExportPDF: () => void;
 }
 
 export const Toolbar = ({
@@ -22,6 +23,7 @@ export const Toolbar = ({
   onClear,
   hasPoints,
   onExport,
+  onExportPDF,
 }: ToolbarProps) => {
   return (
     <Card className="p-4">
@@ -56,14 +58,25 @@ export const Toolbar = ({
           )}
         </div>
 
-        <Button
-          variant="secondary"
-          onClick={onExport}
-          size="sm"
-        >
-          <Download className="w-4 h-4 mr-2" />
-          Export Image
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={onExport}
+            size="sm"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export Image
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={onExportPDF}
+            size="sm"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Generate PDF
+          </Button>
+        </div>
       </div>
     </Card>
   );

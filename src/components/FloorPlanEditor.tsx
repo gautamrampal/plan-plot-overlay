@@ -5,6 +5,7 @@ import { Toolbar } from './Toolbar';
 import { OverlayControls } from './OverlayControls';
 import { VastuAnalysisChart } from './VastuAnalysisChart';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
 
 export interface Point {
   x: number;
@@ -210,6 +211,87 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     }
   };
 
+  const handleExportPDF = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      toast.error('No canvas found to export');
+      return;
+    }
+
+    try {
+      // Create new PDF document
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      // Get canvas image data
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Calculate dimensions to fit the canvas on the PDF page
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const canvasAspectRatio = canvas.width / canvas.height;
+      
+      let imgWidth = pdfWidth - 20; // 10mm margin on each side
+      let imgHeight = imgWidth / canvasAspectRatio;
+      
+      // If height exceeds page height, adjust dimensions
+      if (imgHeight > pdfHeight - 20) {
+        imgHeight = pdfHeight - 20;
+        imgWidth = imgHeight * canvasAspectRatio;
+      }
+      
+      // Center the image on the page
+      const x = (pdfWidth - imgWidth) / 2;
+      const y = (pdfHeight - imgHeight) / 2;
+      
+      // Add title
+      pdf.setFontSize(16);
+      pdf.text('Floor Plan Analysis', 10, 15);
+      
+      // Add current date
+      pdf.setFontSize(10);
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 10, 25);
+      
+      // Add the floor plan image
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // Add analysis information if available
+      if (state.points.length > 0) {
+        pdf.setFontSize(12);
+        const analysisY = y + imgHeight + 10;
+        pdf.text('Analysis Information:', 10, analysisY);
+        
+        pdf.setFontSize(10);
+        pdf.text(`Plot Points: ${state.points.length}`, 10, analysisY + 10);
+        
+        if (state.center) {
+          pdf.text(`Center Point: (${Math.round(state.center.x)}, ${Math.round(state.center.y)})`, 10, analysisY + 20);
+        }
+        
+        // Add active display options
+        const activeOptions = Object.entries(state.displayOptions)
+          .filter(([_, value]) => value)
+          .map(([key, _]) => key);
+        
+        if (activeOptions.length > 0) {
+          pdf.text(`Active Analysis: ${activeOptions.join(', ')}`, 10, analysisY + 30);
+        }
+      }
+      
+      // Save the PDF
+      const fileName = `floor-plan-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+      
+      toast.success('PDF generated successfully!');
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      toast.error('Failed to generate PDF');
+    }
+  };
+
   if (!state.floorPlanImage || forceShowUploader) {
     return <ImageUploader onImageUpload={handleFloorPlanUpload} title="Upload Floor Plan" />;
   }
@@ -225,6 +307,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         hasPoints={state.points.length > 0}
         hasOverlay={!!state.overlayImage}
         onExport={handleExport}
+        onExportPDF={handleExportPDF}
       />
       
       <FloorPlanCanvas
