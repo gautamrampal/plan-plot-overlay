@@ -272,29 +272,6 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       // Add the floor plan image
       pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
       
-      // Add analysis information if available
-      if (state.points.length > 0) {
-        pdf.setFontSize(12);
-        const analysisY = y + imgHeight + 10;
-        pdf.text('Analysis Information:', 10, analysisY);
-        
-        pdf.setFontSize(10);
-        pdf.text(`Plot Points: ${state.points.length}`, 10, analysisY + 10);
-        
-        if (state.center) {
-          pdf.text(`Center Point: (${Math.round(state.center.x)}, ${Math.round(state.center.y)})`, 10, analysisY + 20);
-        }
-        
-        // Add active display options
-        const activeOptions = Object.entries(state.displayOptions)
-          .filter(([_, value]) => value)
-          .map(([key, _]) => key);
-        
-        if (activeOptions.length > 0) {
-          pdf.text(`Active Analysis: ${activeOptions.join(', ')}`, 10, analysisY + 30);
-        }
-      }
-      
       // Save the PDF
       const fileName = `floor-plan-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(fileName);
