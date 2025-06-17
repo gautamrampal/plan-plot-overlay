@@ -24,6 +24,7 @@ export interface FloorPlanState {
   overlayRotation: number;
   overlayScale: number;
   overlayPosition?: Point;
+  isPlottingComplete: boolean;
   displayOptions: {
     directions: boolean;
     entrances: boolean;
@@ -51,6 +52,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     overlayVisible: true,
     overlayRotation: 0,
     overlayScale: 1,
+    isPlottingComplete: false,
     displayOptions: {
       directions: false,
       entrances: false,
@@ -62,7 +64,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
   });
 
   const calculateCenter = (points: Point[]) => {
-    if (points.length < 3) return null;
+    if (points.length < 2) return null;
     
     const centerX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
     const centerY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
@@ -80,6 +82,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       floorPlanImage: imageUrl,
       points: [],
       center: null,
+      isPlottingComplete: false,
     }));
     toast.success('Floor plan uploaded successfully!');
     onFloorPlanUpload?.();
@@ -90,11 +93,6 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       const newPoints = [...prev.points, point];
       const newCenter = calculateCenter(newPoints);
       
-      // Show toast when center is first calculated
-      if (newPoints.length === 3 && !prev.center) {
-        toast.success('Center point calculated and marked!');
-      }
-      
       return {
         ...prev,
         points: newPoints,
@@ -103,11 +101,27 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     });
   };
 
+  const handleCompletePlotting = () => {
+    if (state.points.length < 2) {
+      toast.error('You need at least 2 points to complete plotting');
+      return;
+    }
+
+    setState(prev => ({
+      ...prev,
+      isPlottingComplete: true,
+      mode: 'select',
+    }));
+    
+    toast.success(`Plotting completed with ${state.points.length} points! Center point calculated and marked.`);
+  };
+
   const handleClearPoints = () => {
     setState(prev => ({
       ...prev,
       points: [],
       center: null,
+      isPlottingComplete: false,
     }));
     toast.info('All points cleared');
   };
@@ -302,10 +316,12 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         mode={state.mode}
         onModeChange={handleModeChange}
         onClear={handleClearPoints}
+        onCompletePlotting={handleCompletePlotting}
         opacity={state.overlayOpacity}
         onOpacityChange={handleOpacityChange}
         hasPoints={state.points.length > 0}
         hasOverlay={!!state.overlayImage}
+        isPlottingComplete={state.isPlottingComplete}
         onExport={handleExport}
         onExportPDF={handleExportPDF}
       />

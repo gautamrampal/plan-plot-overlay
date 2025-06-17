@@ -2,17 +2,19 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MousePointer, Plus, Download, FileText } from 'lucide-react';
+import { MousePointer, Plus, Download, FileText, Check } from 'lucide-react';
 import { FloorPlanState } from './FloorPlanEditor';
 
 interface ToolbarProps {
   mode: FloorPlanState['mode'];
   onModeChange: (mode: FloorPlanState['mode']) => void;
   onClear: () => void;
+  onCompletePlotting: () => void;
   opacity: number;
   onOpacityChange: (opacity: number) => void;
   hasPoints: boolean;
   hasOverlay: boolean;
+  isPlottingComplete: boolean;
   onExport: () => void;
   onExportPDF: () => void;
 }
@@ -21,17 +23,16 @@ export const Toolbar = ({
   mode,
   onModeChange,
   onClear,
+  onCompletePlotting,
   hasPoints,
+  isPlottingComplete,
   onExport,
   onExportPDF,
 }: ToolbarProps) => {
-  // Check if plotting is complete (3 or more points)
-  const isPlottingComplete = hasPoints && mode === 'plot';
-
   return (
     <Card className="p-4">
       <div className="flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button
             variant={mode === 'select' ? 'default' : 'outline'}
             onClick={() => onModeChange('select')}
@@ -50,6 +51,18 @@ export const Toolbar = ({
             <Plus className="w-4 h-4 mr-2" />
             {isPlottingComplete ? 'Plotting Complete' : 'Plot Points'}
           </Button>
+
+          {mode === 'plot' && hasPoints && !isPlottingComplete && (
+            <Button
+              variant="default"
+              onClick={onCompletePlotting}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Complete Plotting
+            </Button>
+          )}
 
           {hasPoints && (
             <Button

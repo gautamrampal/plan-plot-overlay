@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -123,7 +122,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.drawImage(floorPlanImg, offsetX, offsetY, scaledWidth, scaledHeight);
 
         // Draw overlay image if present and visible
-        if (state.overlayImage && state.center && state.overlayVisible && state.points.length >= 3) {
+        if (state.overlayImage && state.center && state.overlayVisible && state.isPlottingComplete) {
           const plotBounds = calculatePlotBounds(state.points);
           
           if (plotBounds) {
@@ -245,7 +244,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.lineTo(state.center.x, state.center.y + 6);
         ctx.stroke();
       }
-    }, [floorPlanImg, imageLoaded, state.points, state.center, state.overlayImage, state.overlayVisible, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, overlaySelected]);
+    }, [floorPlanImg, imageLoaded, state.points, state.center, state.overlayImage, state.overlayVisible, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -272,7 +271,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       }
 
       // Handle point plotting - only allow if plotting is not complete
-      if (state.mode === 'plot' && !isPlottingComplete) {
+      if (state.mode === 'plot' && !state.isPlottingComplete) {
         const newPoint: Point = {
           x,
           y,
@@ -345,7 +344,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
           )}
 
           {/* Show message when plotting is complete */}
-          {isPlottingComplete && state.mode === 'plot' && (
+          {state.isPlottingComplete && state.mode === 'plot' && (
             <div className="flex items-center justify-center gap-2 p-2 bg-green-50 rounded-lg">
               <span className="text-sm font-medium text-green-800">Plotting Complete</span>
               <span className="text-xs text-green-600">
@@ -365,7 +364,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
               className={`border border-slate-200 rounded-lg shadow-sm max-w-full transition-all duration-200 ${
-                state.mode === 'plot' && !isPlottingComplete ? 'cursor-crosshair' : 
+                state.mode === 'plot' && !state.isPlottingComplete ? 'cursor-crosshair' : 
                 overlaySelected && isDragging ? 'cursor-grabbing' :
                 overlaySelected ? 'cursor-grab' : 'cursor-pointer'
               }`}
