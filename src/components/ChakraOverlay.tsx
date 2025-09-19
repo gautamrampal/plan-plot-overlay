@@ -83,6 +83,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     
     ctx.save();
     ctx.translate(textX, textY);
+    ctx.rotate(-Math.PI / 2); // Rotate text to be vertical
     
     ctx.fillStyle = '#dc2626'; // Red color
     ctx.font = `bold ${Math.max(10, radius * 0.04)}px Arial`;
