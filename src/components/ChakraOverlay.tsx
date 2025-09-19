@@ -61,18 +61,13 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     const innerRadius = radius * zone.innerRadius;
     const outerRadius = radius * zone.outerRadius;
     
-    // Create gradient for the zone
-    const gradient = ctx.createRadialGradient(0, 0, innerRadius, 0, 0, outerRadius);
-    gradient.addColorStop(0, zone.color + '80'); // Semi-transparent
-    gradient.addColorStop(1, zone.color + 'CC'); // More opaque
-    
-    // Draw the sector
+    // Draw the sector with neutral color
     ctx.beginPath();
     ctx.arc(0, 0, outerRadius, startAngle, endAngle);
     ctx.arc(0, 0, innerRadius, endAngle, startAngle, true);
     ctx.closePath();
     
-    ctx.fillStyle = gradient;
+    ctx.fillStyle = '#ffffff20'; // Light transparent fill
     ctx.fill();
     
     // Draw border
