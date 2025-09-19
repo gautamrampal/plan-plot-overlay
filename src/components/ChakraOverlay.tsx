@@ -87,26 +87,55 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx,
     const outerRadius = radius * zone.outerRadius;
     
     if (constrainToPlot && plotBounds) {
-      // For chakra directions, draw lines to plot corners instead of circular sectors
+      // For chakra directions, draw lines to plot boundaries
       const midAngle = (zone.startAngle + zone.endAngle) / 2;
       const angleRad = (midAngle * Math.PI) / 180;
       
-      // Calculate line endpoint based on plot bounds
+      // Calculate line endpoint to always reach plot boundary
       const cos = Math.cos(angleRad);
       const sin = Math.sin(angleRad);
       
-      // Find intersection with plot boundary
+      // Calculate maximum distance to plot boundary in this direction
+      const halfWidth = plotBounds.width / 2;
+      const halfHeight = plotBounds.height / 2;
+      
+      // Find intersection with plot rectangle boundary
       let lineEndX, lineEndY;
-      if (Math.abs(cos) > Math.abs(sin)) {
-        // Hit vertical boundary
-        const boundaryX = cos > 0 ? plotBounds.width / 2 : -plotBounds.width / 2;
-        lineEndX = boundaryX;
-        lineEndY = boundaryX * Math.tan(angleRad);
+      
+      // Calculate distances to each boundary
+      const distToRight = halfWidth / Math.abs(cos);
+      const distToTop = halfHeight / Math.abs(sin);
+      const distToLeft = halfWidth / Math.abs(cos);  
+      const distToBottom = halfHeight / Math.abs(sin);
+      
+      // Use the minimum distance to ensure we hit the boundary
+      let maxDistance;
+      if (Math.abs(cos) < 0.001) {
+        // Nearly vertical line
+        maxDistance = halfHeight;
+        lineEndX = 0;
+        lineEndY = sin > 0 ? halfHeight : -halfHeight;
+      } else if (Math.abs(sin) < 0.001) {
+        // Nearly horizontal line
+        maxDistance = halfWidth;
+        lineEndX = cos > 0 ? halfWidth : -halfWidth;
+        lineEndY = 0;
       } else {
-        // Hit horizontal boundary  
-        const boundaryY = sin > 0 ? plotBounds.height / 2 : -plotBounds.height / 2;
-        lineEndY = boundaryY;
-        lineEndX = boundaryY / Math.tan(angleRad);
+        // Find which boundary we hit first
+        const distanceToVertical = halfWidth / Math.abs(cos);
+        const distanceToHorizontal = halfHeight / Math.abs(sin);
+        
+        if (distanceToVertical <= distanceToHorizontal) {
+          // Hit vertical boundary first
+          maxDistance = distanceToVertical;
+          lineEndX = cos > 0 ? halfWidth : -halfWidth;
+          lineEndY = lineEndX * Math.tan(angleRad);
+        } else {
+          // Hit horizontal boundary first
+          maxDistance = distanceToHorizontal;
+          lineEndY = sin > 0 ? halfHeight : -halfHeight;
+          lineEndX = lineEndY / Math.tan(angleRad);
+        }
       }
       
       // Draw line from center to plot boundary
