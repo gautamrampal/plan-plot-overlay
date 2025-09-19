@@ -163,8 +163,13 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx,
       ctx.stroke();
     }
     
-    // Calculate text angle
+    // Calculate text angle - position between the lines, not on them
+    // Offset the text angle slightly from the center to avoid being on the directional line
     let textAngle = (zone.startAngle + zone.endAngle) / 2 * Math.PI / 180;
+    // Add a small angular offset to position text between lines
+    const angleOffset = (11.25 * Math.PI / 180); // Half of the zone width (22.5/2)
+    textAngle += angleOffset * 0.3; // Use 30% of the offset to stay between lines
+    
     const textRadius = radius * 1.15;
     const textX = Math.cos(textAngle) * textRadius;
     const textY = Math.sin(textAngle) * textRadius;
