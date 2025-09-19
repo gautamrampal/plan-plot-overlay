@@ -189,6 +189,10 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     }
 
     try {
+      // Force canvas redraw to ensure latest state is captured
+      // This ensures the chakra overlay is properly rendered for export
+      canvas.getContext('2d')?.drawImage(canvas, 0, 0);
+      
       // Create a download link
       const link = document.createElement('a');
       link.download = `floor-plan-${new Date().toISOString().split('T')[0]}.png`;
@@ -214,6 +218,10 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     }
 
     try {
+      // Force canvas redraw to ensure latest state is captured
+      // This ensures the chakra overlay is properly rendered for export
+      canvas.getContext('2d')?.drawImage(canvas, 0, 0);
+      
       // Create new PDF document
       const pdf = new jsPDF({
         orientation: 'landscape',
