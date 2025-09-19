@@ -58,13 +58,13 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
   CHAKRA_ZONES.forEach(zone => {
     const startAngle = (zone.startAngle * Math.PI) / 180;
     const endAngle = (zone.endAngle * Math.PI) / 180;
-    const innerRadius = radius * zone.innerRadius;
     const outerRadius = radius * zone.outerRadius;
     
-    // Draw the sector with neutral color
+    // Draw the sector from center to outer radius
     ctx.beginPath();
+    ctx.moveTo(0, 0); // Start from center
     ctx.arc(0, 0, outerRadius, startAngle, endAngle);
-    ctx.arc(0, 0, innerRadius, endAngle, startAngle, true);
+    ctx.lineTo(0, 0); // Connect back to center
     ctx.closePath();
     
     ctx.fillStyle = '#ffffff20'; // Light transparent fill
@@ -94,24 +94,11 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     ctx.restore();
   });
   
-  // Draw center circle
+  // Draw center point
   ctx.beginPath();
-  ctx.arc(0, 0, radius * 0.3, 0, 2 * Math.PI);
-  ctx.fillStyle = '#ffffff';
+  ctx.arc(0, 0, 3, 0, 2 * Math.PI);
+  ctx.fillStyle = '#000000';
   ctx.fill();
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  
-  // Draw center cross
-  ctx.beginPath();
-  ctx.moveTo(-radius * 0.15, 0);
-  ctx.lineTo(radius * 0.15, 0);
-  ctx.moveTo(0, -radius * 0.15);
-  ctx.lineTo(0, radius * 0.15);
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 2;
-  ctx.stroke();
   
   // Draw degree markings
   for (let i = 0; i < 360; i += 15) {
