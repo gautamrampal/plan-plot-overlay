@@ -318,6 +318,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         onDisplayOptionChange={handleDisplayOptionChange}
         onToggleOverlay={() => {}}
         hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections}
+        isPlottingComplete={state.isPlottingComplete}
       />
     </div>
   );

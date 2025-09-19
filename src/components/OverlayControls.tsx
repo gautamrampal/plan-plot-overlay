@@ -6,6 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RotateCcw, RotateCw, Expand, ToggleLeft, Move } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface OverlayControlsProps {
   isVisible: boolean;
@@ -27,6 +28,7 @@ interface OverlayControlsProps {
   onDisplayOptionChange: (option: string, value: boolean) => void;
   onToggleOverlay: (visible: boolean) => void;
   hasOverlay: boolean;
+  isPlottingComplete: boolean;
 }
 
 export const OverlayControls = ({
@@ -41,10 +43,24 @@ export const OverlayControls = ({
   onDisplayOptionChange,
   onToggleOverlay,
   hasOverlay,
+  isPlottingComplete,
 }: OverlayControlsProps) => {
+  const { toast } = useToast();
   const handleRotationChange = (delta: number) => {
     const newRotation = (rotation + delta) % 360;
     onRotationChange(newRotation < 0 ? newRotation + 360 : newRotation);
+  };
+
+  const handleDisplayOptionClick = (key: string, checked: boolean) => {
+    if (!isPlottingComplete) {
+      toast({
+        title: "Plot Required",
+        description: "Mark points on the floor plan",
+        variant: "destructive",
+      });
+      return;
+    }
+    onDisplayOptionChange(key, checked);
   };
 
   // Get the active overlay type for the label
@@ -228,8 +244,9 @@ export const OverlayControls = ({
                 </div>
                 <Switch
                   checked={displayOptions[key as keyof typeof displayOptions]}
-                  onCheckedChange={(checked) => onDisplayOptionChange(key, checked)}
+                  onCheckedChange={(checked) => handleDisplayOptionClick(key, checked)}
                   className="transition-all duration-200"
+                  disabled={!isPlottingComplete}
                 />
               </div>
             ))}
