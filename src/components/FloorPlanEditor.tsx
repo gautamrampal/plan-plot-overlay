@@ -269,29 +269,17 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       pdf.setFontSize(10);
       pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 10, 25);
       
-      // Add notes if they exist
+      // Add the floor plan image first
+      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      
+      // Add notes below the image if they exist
       if (state.notes.trim()) {
+        const notesStartY = y + imgHeight + 10; // Start notes 10mm below the image
         pdf.setFontSize(12);
-        pdf.text('Notes:', 10, 35);
+        pdf.text('Notes:', 10, notesStartY);
         pdf.setFontSize(10);
         const notesLines = pdf.splitTextToSize(state.notes, pdfWidth - 20);
-        pdf.text(notesLines, 10, 45);
-        
-        // Adjust image position to account for notes
-        const notesHeight = notesLines.length * 4 + 20; // Approximate height for notes
-        const adjustedY = Math.max(y, 45 + notesHeight);
-        const availableHeight = pdfHeight - adjustedY - 10;
-        
-        // Recalculate image dimensions if needed
-        if (imgHeight > availableHeight) {
-          imgHeight = availableHeight;
-          imgWidth = imgHeight * canvasAspectRatio;
-        }
-        
-        pdf.addImage(imgData, 'PNG', x, adjustedY, imgWidth, imgHeight);
-      } else {
-        // Add the floor plan image at original position
-        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+        pdf.text(notesLines, 10, notesStartY + 8);
       }
       
       // Save the PDF
