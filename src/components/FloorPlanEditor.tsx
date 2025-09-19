@@ -337,6 +337,21 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         <VastuAnalysisChart />
       )}
 
+      <OverlayControls
+        isVisible={state.displayOptions.chakra}
+        rotation={state.overlayRotation}
+        scale={state.overlayScale}
+        opacity={state.overlayOpacity}
+        onRotationChange={handleRotationChange}
+        onScaleChange={handleScaleChange}
+        onOpacityChange={handleOpacityChange}
+        displayOptions={state.displayOptions}
+        onDisplayOptionChange={handleDisplayOptionChange}
+        onToggleOverlay={() => {}}
+        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections}
+        isPlottingComplete={state.isPlottingComplete}
+      />
+
       {/* Notes Section */}
       <Card>
         <CardHeader>
@@ -355,21 +370,6 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
           </div>
         </CardContent>
       </Card>
-
-      <OverlayControls
-        isVisible={state.displayOptions.chakra}
-        rotation={state.overlayRotation}
-        scale={state.overlayScale}
-        opacity={state.overlayOpacity}
-        onRotationChange={handleRotationChange}
-        onScaleChange={handleScaleChange}
-        onOpacityChange={handleOpacityChange}
-        displayOptions={state.displayOptions}
-        onDisplayOptionChange={handleDisplayOptionChange}
-        onToggleOverlay={() => {}}
-        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections}
-        isPlottingComplete={state.isPlottingComplete}
-      />
     </div>
   );
 };
