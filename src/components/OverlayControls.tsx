@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RotateCcw, RotateCw, Expand } from 'lucide-react';
+import { RotateCcw, RotateCw, Expand, ToggleLeft, Move } from 'lucide-react';
 
 interface OverlayControlsProps {
   isVisible: boolean;
@@ -57,13 +57,28 @@ export const OverlayControls = ({
 
   return (
     <Card className="p-6 space-y-6">
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <h3 className="text-lg font-semibold">Display Options</h3>
+        </div>
+        <p className="text-sm text-muted-foreground">Toggle display features and adjust overlay settings</p>
+      </div>
+
       <div className="space-y-6">
-        {/* Overlay Controls */}
+        {/* Overlay Controls - Show above display options if there's an overlay */}
         {hasOverlay && (
           <div className="space-y-4">
-            <Label className="text-sm font-medium">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Move className="w-4 h-4" />
               {getActiveOverlayType()} Compass Controls
             </Label>
+            
+            {/* Movement Instructions */}
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-700">
+                💡 <strong>Move:</strong> Click and drag the overlay on the canvas
+              </p>
+            </div>
             
             {/* Rotation Control */}
             <div className="space-y-3">
@@ -204,6 +219,29 @@ export const OverlayControls = ({
             </div>
           </div>
         )}
+
+        {/* Display Options - Now below compass controls */}
+        <div className={`space-y-4 ${hasOverlay ? 'border-t pt-4' : ''}`}>
+          <Label className="text-sm font-medium">Display Features</Label>
+          
+          <div className="space-y-3">
+            {Object.entries(displayOptions).map(([key, value]) => (
+              <div key={key} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ToggleLeft className="w-4 h-4 text-muted-foreground" />
+                  <Label className="text-sm capitalize">
+                    {key === 'chakraDirections' ? 'Chakra Directions' : key}
+                  </Label>
+                </div>
+                <Switch
+                  checked={value}
+                  onCheckedChange={(checked) => onDisplayOptionChange(key, checked)}
+                  className="transition-all duration-200"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </Card>
   );
