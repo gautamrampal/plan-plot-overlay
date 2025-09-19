@@ -123,13 +123,21 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.drawImage(floorPlanImg, offsetX, offsetY, scaledWidth, scaledHeight);
 
         // Draw chakra overlay if enabled and plotting is complete
-        if (state.displayOptions.chakra && state.center && state.isPlottingComplete) {
+        if ((state.displayOptions.chakra || state.displayOptions.chakraDirections) && state.center && state.isPlottingComplete) {
           const plotBounds = calculatePlotBounds(state.points);
           
           if (plotBounds) {
-            // Calculate overlay size to fit exactly within plot bounds
-            const maxSize = Math.min(plotBounds.width, plotBounds.height);
-            const overlaySize = maxSize * state.overlayScale;
+            // For regular chakra, use normal size calculation
+            // For chakra directions, constrain size to plot bounds
+            let overlaySize;
+            if (state.displayOptions.chakraDirections) {
+              // Calculate overlay size to fit exactly within plot bounds
+              const maxSize = Math.min(plotBounds.width, plotBounds.height);
+              overlaySize = maxSize * state.overlayScale;
+            } else {
+              // Normal chakra overlay size (can extend beyond plot)
+              overlaySize = 300 * state.overlayScale;
+            }
 
             // Use custom position if available, otherwise center on the center point
             const centerX = state.overlayPosition?.x ?? state.center.x;
@@ -142,7 +150,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               scale: state.overlayScale,
               opacity: state.overlayOpacity,
               size: overlaySize,
-              ctx
+              ctx,
+              plotBounds,
+              constrainToPlot: state.displayOptions.chakraDirections
             });
 
             // Store overlay bounds for selection detection
@@ -223,7 +233,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.lineTo(state.center.x, state.center.y + 6);
         ctx.stroke();
       }
-    }, [floorPlanImg, imageLoaded, state.points, state.center, state.displayOptions.chakra, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
+    }, [floorPlanImg, imageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -234,7 +244,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       const y = e.clientY - rect.top;
 
       // Check if clicking on chakra overlay
-      if (overlayBounds && state.displayOptions.chakra) {
+      if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections)) {
         const clickedOnOverlay = 
           x >= overlayBounds.x && 
           x <= overlayBounds.x + overlayBounds.width &&

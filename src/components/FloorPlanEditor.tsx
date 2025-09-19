@@ -27,6 +27,7 @@ export interface FloorPlanState {
     directions: boolean;
     entrances: boolean;
     chakra: boolean;
+    chakraDirections: boolean;
     planets: boolean;
     vastu: boolean;
     analysis: boolean;
@@ -53,6 +54,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       directions: false,
       entrances: false,
       chakra: false,
+      chakraDirections: false,
       planets: false,
       vastu: false,
       analysis: false,

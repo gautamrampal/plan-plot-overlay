@@ -19,6 +19,7 @@ interface OverlayControlsProps {
     directions: boolean;
     entrances: boolean;
     chakra: boolean;
+    chakraDirections: boolean;
     planets: boolean;
     vastu: boolean;
     analysis: boolean;
@@ -50,6 +51,7 @@ export const OverlayControls = ({
   const getActiveOverlayType = () => {
     if (displayOptions.directions) return 'Directions';
     if (displayOptions.chakra) return 'Chakra';
+    if (displayOptions.chakraDirections) return 'Chakra Directions';
     return 'Overlay';
   };
 
@@ -227,7 +229,9 @@ export const OverlayControls = ({
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ToggleLeft className="w-4 h-4 text-muted-foreground" />
-                  <Label className="text-sm capitalize">{key}</Label>
+                  <Label className="text-sm capitalize">
+                    {key === 'chakraDirections' ? 'Chakra Directions' : key}
+                  </Label>
                 </div>
                 <Switch
                   checked={value}

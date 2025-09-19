@@ -18,6 +18,17 @@ interface ChakraOverlayProps {
   opacity: number;
   size: number;
   ctx: CanvasRenderingContext2D;
+  plotBounds?: {
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+    width: number;
+    height: number;
+    centerX: number;
+    centerY: number;
+  } | null;
+  constrainToPlot?: boolean;
 }
 
 const CHAKRA_ZONES: ChakraZone[] = [
@@ -39,7 +50,7 @@ const CHAKRA_ZONES: ChakraZone[] = [
   { name: 'NNW', element: 'North-Northwest', startAngle: 337.5, endAngle: 360, color: '#475569', innerRadius: 0, outerRadius: 1.0 },
 ];
 
-export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx }: ChakraOverlayProps) => {
+export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx, plotBounds, constrainToPlot = false }: ChakraOverlayProps) => {
   ctx.save();
   ctx.globalAlpha = opacity;
   
@@ -52,7 +63,22 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
   // Apply scale
   ctx.scale(scale, scale);
   
-  const radius = size / 2;
+  let radius = size / 2;
+  
+  // If constraining to plot and plot bounds exist, calculate the maximum radius
+  if (constrainToPlot && plotBounds) {
+    // Calculate the distance from center to the nearest plot boundary
+    const distanceToLeft = Math.abs(center.x - plotBounds.minX);
+    const distanceToRight = Math.abs(plotBounds.maxX - center.x);
+    const distanceToTop = Math.abs(center.y - plotBounds.minY);
+    const distanceToBottom = Math.abs(plotBounds.maxY - center.y);
+    
+    // Find the minimum distance to ensure chakra stays within plot bounds
+    const maxRadius = Math.min(distanceToLeft, distanceToRight, distanceToTop, distanceToBottom);
+    
+    // Use the smaller of the calculated radius or the constrained radius
+    radius = Math.min(radius, maxRadius / scale); // Divide by scale to account for scaling
+  }
   
   // Draw each zone
   CHAKRA_ZONES.forEach(zone => {
