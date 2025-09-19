@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FloorPlanState, Point } from './FloorPlanEditor';
 import { Plus, Minus } from 'lucide-react';
 import { drawChakraOverlay } from './ChakraOverlay';
+import directionsCompass from '@/assets/directions-compass.png';
 
 interface FloorPlanCanvasProps {
   state: FloorPlanState;
@@ -25,6 +26,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     } | null>(null);
     const [imageLoaded, setImageLoaded] = useState(false);
     const [floorPlanImg, setFloorPlanImg] = useState<HTMLImageElement | null>(null);
+    const [directionsImg, setDirectionsImg] = useState<HTMLImageElement | null>(null);
+    const [directionsImageLoaded, setDirectionsImageLoaded] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -97,6 +100,22 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       }
     }, [state.floorPlanImage]);
 
+    // Load directions compass image
+    useEffect(() => {
+      const img = new Image();
+      img.onload = () => {
+        console.log('Directions compass image loaded successfully');
+        setDirectionsImg(img);
+        setDirectionsImageLoaded(true);
+      };
+      img.onerror = () => {
+        console.error('Failed to load directions compass image');
+        setDirectionsImageLoaded(false);
+        setDirectionsImg(null);
+      };
+      img.src = directionsCompass;
+    }, []);
+
     // Draw canvas
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -121,6 +140,60 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
 
         // Draw the floor plan image
         ctx.drawImage(floorPlanImg, offsetX, offsetY, scaledWidth, scaledHeight);
+
+        // Draw directions compass overlay if enabled and plotting is complete
+        if (state.displayOptions.directions && state.center && state.isPlottingComplete && directionsImg && directionsImageLoaded) {
+          const plotBounds = calculatePlotBounds(state.points);
+          
+          if (plotBounds) {
+            // Calculate compass size based on plot bounds
+            const maxSize = Math.min(plotBounds.width, plotBounds.height);
+            const compassSize = maxSize * state.overlayScale * 0.8; // Make it slightly smaller than plot bounds
+            
+            // Use custom position if available, otherwise center on the center point
+            const centerX = state.overlayPosition?.x ?? state.center.x;
+            const centerY = state.overlayPosition?.y ?? state.center.y;
+            
+            // Apply rotation and opacity
+            ctx.save();
+            ctx.globalAlpha = state.overlayOpacity;
+            ctx.translate(centerX, centerY);
+            ctx.rotate((state.overlayRotation * Math.PI) / 180);
+            
+            // Draw the compass image centered
+            ctx.drawImage(
+              directionsImg,
+              -compassSize / 2,
+              -compassSize / 2,
+              compassSize,
+              compassSize
+            );
+            
+            ctx.restore();
+
+            // Store overlay bounds for selection detection
+            setOverlayBounds({
+              x: centerX - compassSize / 2,
+              y: centerY - compassSize / 2,
+              width: compassSize,
+              height: compassSize,
+            });
+
+            // Draw selection border if overlay is selected
+            if (overlaySelected) {
+              ctx.save();
+              ctx.strokeStyle = '#3b82f6';
+              ctx.lineWidth = 3;
+              ctx.setLineDash([10, 5]);
+              ctx.globalAlpha = 0.8;
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, compassSize / 2, 0, 2 * Math.PI);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.restore();
+            }
+          }
+        }
 
         // Draw chakra overlay if enabled and plotting is complete
         if ((state.displayOptions.chakra || state.displayOptions.chakraDirections) && state.center && state.isPlottingComplete) {
@@ -233,7 +306,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.lineTo(state.center.x, state.center.y + 6);
         ctx.stroke();
       }
-    }, [floorPlanImg, imageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
+    }, [floorPlanImg, imageLoaded, directionsImg, directionsImageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.displayOptions.directions, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -243,8 +316,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Check if clicking on chakra overlay
-      if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections)) {
+      // Check if clicking on overlay (chakra or directions)
+      if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions)) {
         const clickedOnOverlay = 
           x >= overlayBounds.x && 
           x <= overlayBounds.x + overlayBounds.width &&
@@ -323,9 +396,11 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     return (
       <Card className="p-4" ref={containerRef}>
         <div className="space-y-4">
-          {overlaySelected && state.displayOptions.chakra && (
+          {overlaySelected && (state.displayOptions.chakra || state.displayOptions.directions) && (
             <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
-              <span className="text-sm font-medium text-blue-800">Chakra Overlay Selected</span>
+              <span className="text-sm font-medium text-blue-800">
+                {state.displayOptions.directions ? 'Directions Overlay Selected' : 'Chakra Overlay Selected'}
+              </span>
               <span className="text-xs text-blue-600">
                 Click and drag to move • Use controls to adjust rotation and scale
               </span>
@@ -370,9 +445,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             </div>
           )}
 
-          {state.displayOptions.chakra && state.isPlottingComplete && (
+          {(state.displayOptions.chakra || state.displayOptions.directions) && state.isPlottingComplete && (
             <div className="text-center text-sm text-green-600">
-              Chakra overlay is active - click to select and modify
+              {state.displayOptions.directions ? 'Directions overlay is active' : 'Chakra overlay is active'} - click to select and modify
             </div>
           )}
         </div>
