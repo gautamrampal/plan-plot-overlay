@@ -15,12 +15,10 @@ export interface Point {
 
 export interface FloorPlanState {
   floorPlanImage: string | null;
-  overlayImage: string | null;
   points: Point[];
   center: Point | null;
-  mode: 'select' | 'plot' | 'overlay';
+  mode: 'select' | 'plot';
   overlayOpacity: number;
-  overlayVisible: boolean;
   overlayRotation: number;
   overlayScale: number;
   overlayPosition?: Point;
@@ -44,12 +42,10 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [state, setState] = useState<FloorPlanState>({
     floorPlanImage: null,
-    overlayImage: null,
     points: [],
     center: null,
     mode: 'select',
-    overlayOpacity: 0.5,
-    overlayVisible: true,
+    overlayOpacity: 0.6,
     overlayRotation: 0,
     overlayScale: 1,
     isPlottingComplete: false,
@@ -168,31 +164,16 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
           newState.displayOptions[key as keyof typeof newState.displayOptions] = key === option;
         });
 
-        // Set the appropriate overlay image based on the selected option
-        if (option === 'directions') {
-          newState.overlayImage = '/lovable-uploads/908ba2e8-f456-48c1-ac55-63fe60118d79.png';
-          newState.overlayVisible = true;
-          toast.success('Directions compass overlay enabled!');
-        } else if (option === 'chakra') {
-          newState.overlayImage = '/lovable-uploads/31a3f34b-1195-4cbd-bb55-0029bc57c4cb.png';
-          newState.overlayVisible = true;
+        if (option === 'chakra') {
           toast.success('Chakra compass overlay enabled!');
         } else if (option === 'analysis') {
-          // For analysis, we don't need an overlay image
-          newState.overlayImage = null;
-          newState.overlayVisible = false;
           toast.success('Vastu analysis chart enabled!');
         } else {
-          // For other options that don't have overlay images yet
-          newState.overlayImage = null;
-          newState.overlayVisible = false;
           toast.success(`${option.charAt(0).toUpperCase() + option.slice(1)} display enabled!`);
         }
       } else {
-        // Disable the option and remove overlay
+        // Disable the option
         newState.displayOptions[option as keyof typeof newState.displayOptions] = false;
-        newState.overlayImage = null;
-        newState.overlayVisible = false;
         toast.info(`${option.charAt(0).toUpperCase() + option.slice(1)} display disabled`);
       }
 
@@ -297,7 +278,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         opacity={state.overlayOpacity}
         onOpacityChange={handleOpacityChange}
         hasPoints={state.points.length > 0}
-        hasOverlay={!!state.overlayImage}
+        hasOverlay={state.displayOptions.chakra}
         isPlottingComplete={state.isPlottingComplete}
         onExport={handleExport}
         onExportPDF={handleExportPDF}
@@ -316,7 +297,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       )}
 
       <OverlayControls
-        isVisible={state.overlayVisible}
+        isVisible={state.displayOptions.chakra}
         rotation={state.overlayRotation}
         scale={state.overlayScale}
         opacity={state.overlayOpacity}
@@ -325,8 +306,8 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         onOpacityChange={handleOpacityChange}
         displayOptions={state.displayOptions}
         onDisplayOptionChange={handleDisplayOptionChange}
-        onToggleOverlay={handleToggleOverlay}
-        hasOverlay={!!state.overlayImage}
+        onToggleOverlay={() => {}}
+        hasOverlay={state.displayOptions.chakra}
       />
     </div>
   );

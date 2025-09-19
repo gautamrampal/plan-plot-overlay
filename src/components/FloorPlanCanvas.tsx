@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FloorPlanState, Point } from './FloorPlanEditor';
 import { Plus, Minus } from 'lucide-react';
+import { drawChakraOverlay } from './ChakraOverlay';
 
 interface FloorPlanCanvasProps {
   state: FloorPlanState;
@@ -121,72 +122,50 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         // Draw the floor plan image
         ctx.drawImage(floorPlanImg, offsetX, offsetY, scaledWidth, scaledHeight);
 
-        // Draw overlay image if present and visible
-        if (state.overlayImage && state.center && state.overlayVisible && state.isPlottingComplete) {
+        // Draw chakra overlay if enabled and plotting is complete
+        if (state.displayOptions.chakra && state.center && state.isPlottingComplete) {
           const plotBounds = calculatePlotBounds(state.points);
           
           if (plotBounds) {
-            const overlayImg = new Image();
-            overlayImg.onload = () => {
+            // Calculate overlay size to fit exactly within plot bounds
+            const maxSize = Math.min(plotBounds.width, plotBounds.height);
+            const overlaySize = maxSize * state.overlayScale;
+
+            // Use custom position if available, otherwise center on the center point
+            const centerX = state.overlayPosition?.x ?? state.center.x;
+            const centerY = state.overlayPosition?.y ?? state.center.y;
+
+            // Draw the chakra overlay
+            drawChakraOverlay({
+              center: { x: centerX, y: centerY, id: 'overlay-center' },
+              rotation: state.overlayRotation,
+              scale: state.overlayScale,
+              opacity: state.overlayOpacity,
+              size: overlaySize,
+              ctx
+            });
+
+            // Store overlay bounds for selection detection
+            setOverlayBounds({
+              x: centerX - overlaySize / 2,
+              y: centerY - overlaySize / 2,
+              width: overlaySize,
+              height: overlaySize,
+            });
+
+            // Draw selection border if overlay is selected
+            if (overlaySelected) {
               ctx.save();
-              ctx.globalAlpha = state.overlayOpacity;
-
-              // Calculate overlay size to fit exactly within plot bounds (100% of boundary)
-              const maxSize = Math.min(plotBounds.width, plotBounds.height);
-              
-              // Maintain aspect ratio of the overlay image
-              const overlayAspectRatio = overlayImg.width / overlayImg.height;
-              let overlayWidth, overlayHeight;
-              
-              if (overlayAspectRatio > 1) {
-                overlayWidth = maxSize;
-                overlayHeight = maxSize / overlayAspectRatio;
-              } else {
-                overlayHeight = maxSize;
-                overlayWidth = maxSize * overlayAspectRatio;
-              }
-
-              // Apply user scaling on top of the calculated size
-              overlayWidth *= state.overlayScale;
-              overlayHeight *= state.overlayScale;
-
-              // Use custom position if available, otherwise center on the center point
-              const centerX = state.overlayPosition?.x ?? state.center.x;
-              const centerY = state.overlayPosition?.y ?? state.center.y;
-              
-              const overlayX = centerX - overlayWidth / 2;
-              const overlayY = centerY - overlayHeight / 2;
-
-              // Apply rotation around the center point - ONLY for the overlay image
-              ctx.translate(centerX, centerY);
-              ctx.rotate((state.overlayRotation * Math.PI) / 180);
-              ctx.translate(-centerX, -centerY);
-
-              ctx.drawImage(overlayImg, overlayX, overlayY, overlayWidth, overlayHeight);
-
-              // Store overlay bounds for selection detection (before rotation)
-              setOverlayBounds({
-                x: overlayX,
-                y: overlayY,
-                width: overlayWidth,
-                height: overlayHeight,
-              });
-
-              // Draw selection border if overlay is selected
-              if (overlaySelected) {
-                ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.strokeRect(overlayX - 2, overlayY - 2, overlayWidth + 4, overlayHeight + 4);
-                ctx.setLineDash([]);
-              }
-
+              ctx.strokeStyle = '#3b82f6';
+              ctx.lineWidth = 3;
+              ctx.setLineDash([10, 5]);
+              ctx.globalAlpha = 0.8;
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, overlaySize / 2, 0, 2 * Math.PI);
+              ctx.stroke();
+              ctx.setLineDash([]);
               ctx.restore();
-            };
-            overlayImg.onerror = () => {
-              console.error('Failed to load overlay image');
-            };
-            overlayImg.src = state.overlayImage;
+            }
           }
         }
       }
@@ -244,7 +223,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.lineTo(state.center.x, state.center.y + 6);
         ctx.stroke();
       }
-    }, [floorPlanImg, imageLoaded, state.points, state.center, state.overlayImage, state.overlayVisible, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
+    }, [floorPlanImg, imageLoaded, state.points, state.center, state.displayOptions.chakra, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -254,8 +233,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      // Check if clicking on overlay
-      if (overlayBounds && state.overlayImage) {
+      // Check if clicking on chakra overlay
+      if (overlayBounds && state.displayOptions.chakra) {
         const clickedOnOverlay = 
           x >= overlayBounds.x && 
           x <= overlayBounds.x + overlayBounds.width &&
@@ -334,9 +313,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     return (
       <Card className="p-4" ref={containerRef}>
         <div className="space-y-4">
-          {overlaySelected && state.overlayImage && state.overlayVisible && (
+          {overlaySelected && state.displayOptions.chakra && (
             <div className="flex items-center justify-center gap-2 p-2 bg-blue-50 rounded-lg">
-              <span className="text-sm font-medium text-blue-800">Overlay Selected</span>
+              <span className="text-sm font-medium text-blue-800">Chakra Overlay Selected</span>
               <span className="text-xs text-blue-600">
                 Click and drag to move • Use controls to adjust rotation and scale
               </span>
@@ -381,9 +360,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             </div>
           )}
 
-          {state.overlayImage && !state.overlayVisible && (
-            <div className="text-center text-sm text-orange-600">
-              Overlay is hidden - use controls to show it
+          {state.displayOptions.chakra && state.isPlottingComplete && (
+            <div className="text-center text-sm text-green-600">
+              Chakra overlay is active - click to select and modify
             </div>
           )}
         </div>
