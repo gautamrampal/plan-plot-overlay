@@ -84,8 +84,8 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     ctx.save();
     ctx.translate(textX, textY);
     
-    ctx.fillStyle = '#000000';
-    ctx.font = `${Math.max(10, radius * 0.04)}px Arial`;
+    ctx.fillStyle = '#dc2626'; // Red color
+    ctx.font = `bold ${Math.max(10, radius * 0.04)}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(zone.name, 0, 0);
