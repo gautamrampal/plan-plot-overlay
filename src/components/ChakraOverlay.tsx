@@ -75,9 +75,12 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     ctx.lineWidth = 1;
     ctx.stroke();
     
-    // Calculate text angle, handling zones that cross 0°
+    // Calculate text angle, handling zones that cross 0° and special positioning for North
     let textAngle;
-    if (zone.startAngle > zone.endAngle) {
+    if (zone.name === 'N') {
+      // Position North label between North and NNW zones
+      textAngle = (337.5 * Math.PI) / 180;
+    } else if (zone.startAngle > zone.endAngle) {
       // Zone crosses 0° (like North: 337.5° to 22.5°)
       textAngle = ((zone.startAngle + zone.endAngle + 360) / 2) * Math.PI / 180;
       if (textAngle > Math.PI) textAngle -= 2 * Math.PI;
