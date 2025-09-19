@@ -32,7 +32,7 @@ interface ChakraOverlayProps {
 }
 
 const CHAKRA_ZONES: ChakraZone[] = [
-  { name: 'N', element: 'North', startAngle: 337.5, endAngle: 22.5, color: '#3b82f6', innerRadius: 0, outerRadius: 1.0 },
+  { name: 'N', element: 'North', startAngle: 0, endAngle: 22.5, color: '#3b82f6', innerRadius: 0, outerRadius: 1.0 },
   { name: 'NNE', element: 'North-Northeast', startAngle: 22.5, endAngle: 45, color: '#06b6d4', innerRadius: 0, outerRadius: 1.0 },
   { name: 'NE', element: 'Northeast', startAngle: 45, endAngle: 67.5, color: '#10b981', innerRadius: 0, outerRadius: 1.0 },
   { name: 'ENE', element: 'East-Northeast', startAngle: 67.5, endAngle: 90, color: '#84cc16', innerRadius: 0, outerRadius: 1.0 },
@@ -57,8 +57,8 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx,
   // Translate to center point
   ctx.translate(center.x, center.y);
   
-  // Apply rotation - adjust base rotation so North points up (subtract 90 degrees)
-  ctx.rotate(((rotation - 90) * Math.PI) / 180);
+  // Apply rotation - North is now at 0 degrees properly
+  ctx.rotate((rotation * Math.PI) / 180);
   
   // Apply scale
   ctx.scale(scale, scale);
@@ -88,7 +88,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx,
     
     if (constrainToPlot && plotBounds) {
       // For chakra directions, draw lines to plot corners instead of circular sectors
-      const midAngle = zone.startAngle === 337.5 && zone.endAngle === 22.5 ? 0 : (zone.startAngle + zone.endAngle) / 2;
+      const midAngle = (zone.startAngle + zone.endAngle) / 2;
       const angleRad = (midAngle * Math.PI) / 180;
       
       // Calculate line endpoint based on plot bounds
@@ -134,18 +134,8 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx,
       ctx.stroke();
     }
     
-    // Calculate text angle, handling zones that cross 0° and special positioning for North
-    let textAngle;
-    if (zone.name === 'N') {
-      // Position North label at zero degrees
-      textAngle = 0;
-    } else if (zone.startAngle > zone.endAngle) {
-      // Zone crosses 0° (like North: 337.5° to 22.5°)
-      textAngle = ((zone.startAngle + zone.endAngle + 360) / 2) * Math.PI / 180;
-      if (textAngle > Math.PI) textAngle -= 2 * Math.PI;
-    } else {
-      textAngle = (zone.startAngle + zone.endAngle) / 2 * Math.PI / 180;
-    }
+    // Calculate text angle
+    let textAngle = (zone.startAngle + zone.endAngle) / 2 * Math.PI / 180;
     const textRadius = radius * 1.15;
     const textX = Math.cos(textAngle) * textRadius;
     const textY = Math.sin(textAngle) * textRadius;
