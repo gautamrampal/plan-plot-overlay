@@ -61,7 +61,7 @@ export const OverlayControls = ({
         <div className="flex items-center justify-center gap-2 mb-2">
           <h3 className="text-lg font-semibold">Display Options</h3>
         </div>
-        <p className="text-sm text-muted-foreground">Toggle display features and adjust overlay settings</p>
+        
       </div>
 
       <div className="space-y-6">
