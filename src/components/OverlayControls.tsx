@@ -218,7 +218,7 @@ export const OverlayControls = ({
           <Label className="text-sm font-medium">Display Features</Label>
           
           <div className="space-y-3">
-            {Object.entries(displayOptions).map(([key, value]) => (
+            {['chakra', 'chakraDirections', 'directions', 'entrances', 'planets', 'vastu', 'analysis'].map((key) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ToggleLeft className="w-4 h-4 text-muted-foreground" />
@@ -227,7 +227,7 @@ export const OverlayControls = ({
                   </Label>
                 </div>
                 <Switch
-                  checked={value}
+                  checked={displayOptions[key as keyof typeof displayOptions]}
                   onCheckedChange={(checked) => onDisplayOptionChange(key, checked)}
                   className="transition-all duration-200"
                 />
