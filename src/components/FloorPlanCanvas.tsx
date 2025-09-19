@@ -65,7 +65,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         if (containerRef.current) {
           const rect = containerRef.current.getBoundingClientRect();
           const maxWidth = Math.min(rect.width - 32, 1200);
-          const maxHeight = Math.min(window.innerHeight * 0.7, 800);
+          const maxHeight = Math.min(window.innerHeight * 0.85, 1000);
           setCanvasSize({ width: maxWidth, height: maxHeight });
         }
       };
