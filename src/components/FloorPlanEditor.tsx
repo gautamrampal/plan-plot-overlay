@@ -4,6 +4,9 @@ import { FloorPlanCanvas } from './FloorPlanCanvas';
 import { Toolbar } from './Toolbar';
 import { OverlayControls } from './OverlayControls';
 import { VastuAnalysisChart } from './VastuAnalysisChart';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 
@@ -23,6 +26,7 @@ export interface FloorPlanState {
   overlayScale: number;
   overlayPosition?: Point;
   isPlottingComplete: boolean;
+  notes: string;
   displayOptions: {
     directions: boolean;
     entrances: boolean;
@@ -50,6 +54,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     overlayRotation: 0,
     overlayScale: 1,
     isPlottingComplete: false,
+    notes: '',
     displayOptions: {
       directions: false,
       entrances: false,
@@ -149,6 +154,10 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       ...prev,
       overlayPosition: { x, y, id: 'overlay-position' },
     }));
+  };
+
+  const handleNotesChange = (notes: string) => {
+    setState(prev => ({ ...prev, notes }));
   };
 
   const handleDisplayOptionChange = (option: string, value: boolean) => {
@@ -260,8 +269,30 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       pdf.setFontSize(10);
       pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 10, 25);
       
-      // Add the floor plan image
-      pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      // Add notes if they exist
+      if (state.notes.trim()) {
+        pdf.setFontSize(12);
+        pdf.text('Notes:', 10, 35);
+        pdf.setFontSize(10);
+        const notesLines = pdf.splitTextToSize(state.notes, pdfWidth - 20);
+        pdf.text(notesLines, 10, 45);
+        
+        // Adjust image position to account for notes
+        const notesHeight = notesLines.length * 4 + 20; // Approximate height for notes
+        const adjustedY = Math.max(y, 45 + notesHeight);
+        const availableHeight = pdfHeight - adjustedY - 10;
+        
+        // Recalculate image dimensions if needed
+        if (imgHeight > availableHeight) {
+          imgHeight = availableHeight;
+          imgWidth = imgHeight * canvasAspectRatio;
+        }
+        
+        pdf.addImage(imgData, 'PNG', x, adjustedY, imgWidth, imgHeight);
+      } else {
+        // Add the floor plan image at original position
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+      }
       
       // Save the PDF
       const fileName = `floor-plan-analysis-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -305,6 +336,25 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       {state.displayOptions.analysis && (
         <VastuAnalysisChart />
       )}
+
+      {/* Notes Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Notes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Add notes about this floor plan analysis</Label>
+            <Textarea
+              id="notes"
+              placeholder="Enter your observations, recommendations, or other notes here..."
+              value={state.notes}
+              onChange={(e) => handleNotesChange(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <OverlayControls
         isVisible={state.displayOptions.chakra}
