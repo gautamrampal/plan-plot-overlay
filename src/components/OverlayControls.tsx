@@ -73,13 +73,6 @@ export const OverlayControls = ({
               {getActiveOverlayType()} Compass Controls
             </Label>
             
-            {/* Movement Instructions */}
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <p className="text-xs text-blue-700">
-                💡 <strong>Move:</strong> Click and drag the overlay on the canvas
-              </p>
-            </div>
-            
             {/* Rotation Control */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
