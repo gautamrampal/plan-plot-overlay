@@ -46,8 +46,8 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
   // Translate to center point
   ctx.translate(center.x, center.y);
   
-  // Apply rotation
-  ctx.rotate((rotation * Math.PI) / 180);
+  // Apply rotation - adjust base rotation so North points up (subtract 90 degrees)
+  ctx.rotate(((rotation - 90) * Math.PI) / 180);
   
   // Apply scale
   ctx.scale(scale, scale);
