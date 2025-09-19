@@ -29,6 +29,7 @@ export interface FloorPlanState {
   notes: string;
   displayOptions: {
     directions: boolean;
+    directionsTwo: boolean;
     entrances: boolean;
     chakra: boolean;
     chakraDirections: boolean;
@@ -57,6 +58,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     notes: '',
     displayOptions: {
       directions: false,
+      directionsTwo: false,
       entrances: false,
       chakra: false,
       chakraDirections: false,
@@ -307,7 +309,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         opacity={state.overlayOpacity}
         onOpacityChange={handleOpacityChange}
         hasPoints={state.points.length > 0}
-        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions}
+        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions || state.displayOptions.directionsTwo}
         isPlottingComplete={state.isPlottingComplete}
         onExport={handleExport}
         onExportPDF={handleExportPDF}
@@ -326,7 +328,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       )}
 
       <OverlayControls
-        isVisible={state.displayOptions.chakra || state.displayOptions.directions}
+        isVisible={state.displayOptions.chakra || state.displayOptions.directions || state.displayOptions.directionsTwo}
         rotation={state.overlayRotation}
         scale={state.overlayScale}
         opacity={state.overlayOpacity}
@@ -336,7 +338,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         displayOptions={state.displayOptions}
         onDisplayOptionChange={handleDisplayOptionChange}
         onToggleOverlay={() => {}}
-        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions}
+        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions || state.displayOptions.directionsTwo}
         isPlottingComplete={state.isPlottingComplete}
       />
 

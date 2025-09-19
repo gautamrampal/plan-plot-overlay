@@ -5,6 +5,7 @@ import { FloorPlanState, Point } from './FloorPlanEditor';
 import { Plus, Minus } from 'lucide-react';
 import { drawChakraOverlay } from './ChakraOverlay';
 import directionsCompass from '@/assets/directions-compass.png';
+import directionsCompassTwo from '@/assets/directions-compass-two.png';
 
 interface FloorPlanCanvasProps {
   state: FloorPlanState;
@@ -28,6 +29,8 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     const [floorPlanImg, setFloorPlanImg] = useState<HTMLImageElement | null>(null);
     const [directionsImg, setDirectionsImg] = useState<HTMLImageElement | null>(null);
     const [directionsImageLoaded, setDirectionsImageLoaded] = useState(false);
+    const [directionsTwoImg, setDirectionsTwoImg] = useState<HTMLImageElement | null>(null);
+    const [directionsTwoImageLoaded, setDirectionsTwoImageLoaded] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -116,6 +119,22 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       img.src = directionsCompass;
     }, []);
 
+    // Load directions compass two image
+    useEffect(() => {
+      const img = new Image();
+      img.onload = () => {
+        console.log('Directions compass two image loaded successfully');
+        setDirectionsTwoImg(img);
+        setDirectionsTwoImageLoaded(true);
+      };
+      img.onerror = () => {
+        console.error('Failed to load directions compass two image');
+        setDirectionsTwoImageLoaded(false);
+        setDirectionsTwoImg(null);
+      };
+      img.src = directionsCompassTwo;
+    }, []);
+
     // Draw canvas
     useEffect(() => {
       const canvas = canvasRef.current;
@@ -163,6 +182,60 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             // Draw the compass image centered
             ctx.drawImage(
               directionsImg,
+              -compassSize / 2,
+              -compassSize / 2,
+              compassSize,
+              compassSize
+            );
+            
+            ctx.restore();
+
+            // Store overlay bounds for selection detection
+            setOverlayBounds({
+              x: centerX - compassSize / 2,
+              y: centerY - compassSize / 2,
+              width: compassSize,
+              height: compassSize,
+            });
+
+            // Draw selection border if overlay is selected
+            if (overlaySelected) {
+              ctx.save();
+              ctx.strokeStyle = '#3b82f6';
+              ctx.lineWidth = 3;
+              ctx.setLineDash([10, 5]);
+              ctx.globalAlpha = 0.8;
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, compassSize / 2, 0, 2 * Math.PI);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.restore();
+            }
+          }
+        }
+
+        // Draw directions compass two overlay if enabled and plotting is complete
+        if (state.displayOptions.directionsTwo && state.center && state.isPlottingComplete && directionsTwoImg && directionsTwoImageLoaded) {
+          const plotBounds = calculatePlotBounds(state.points);
+          
+          if (plotBounds) {
+            // Calculate compass size based on plot bounds
+            const maxSize = Math.min(plotBounds.width, plotBounds.height);
+            const compassSize = maxSize * state.overlayScale * 0.8; // Make it slightly smaller than plot bounds
+            
+            // Use custom position if available, otherwise center on the center point
+            const centerX = state.overlayPosition?.x ?? state.center.x;
+            const centerY = state.overlayPosition?.y ?? state.center.y;
+            
+            // Apply rotation and opacity
+            ctx.save();
+            ctx.globalAlpha = state.overlayOpacity;
+            ctx.translate(centerX, centerY);
+            ctx.rotate((state.overlayRotation * Math.PI) / 180);
+            
+            // Draw the compass two image centered
+            ctx.drawImage(
+              directionsTwoImg,
               -compassSize / 2,
               -compassSize / 2,
               compassSize,

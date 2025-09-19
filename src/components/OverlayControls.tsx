@@ -18,6 +18,7 @@ interface OverlayControlsProps {
   onOpacityChange: (opacity: number) => void;
   displayOptions: {
     directions: boolean;
+    directionsTwo: boolean;
     entrances: boolean;
     chakra: boolean;
     chakraDirections: boolean;
@@ -234,12 +235,13 @@ export const OverlayControls = ({
           <Label className="text-sm font-medium">Display Features</Label>
           
           <div className="space-y-3">
-            {['chakra', 'chakraDirections', 'directions', 'entrances', 'planets', 'vastu', 'analysis'].map((key) => (
+            {['chakra', 'chakraDirections', 'directions', 'directionsTwo', 'entrances', 'planets', 'vastu', 'analysis'].map((key) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ToggleLeft className="w-4 h-4 text-muted-foreground" />
                   <Label className="text-sm capitalize">
-                    {key === 'chakraDirections' ? 'Chakra Directions' : key}
+                    {key === 'chakraDirections' ? 'Chakra Directions' : 
+                     key === 'directionsTwo' ? 'Directions Two' : key}
                   </Label>
                 </div>
                 <Switch
