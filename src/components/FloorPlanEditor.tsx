@@ -288,7 +288,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         opacity={state.overlayOpacity}
         onOpacityChange={handleOpacityChange}
         hasPoints={state.points.length > 0}
-        hasOverlay={state.displayOptions.chakra}
+        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections}
         isPlottingComplete={state.isPlottingComplete}
         onExport={handleExport}
         onExportPDF={handleExportPDF}
@@ -317,7 +317,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         displayOptions={state.displayOptions}
         onDisplayOptionChange={handleDisplayOptionChange}
         onToggleOverlay={() => {}}
-        hasOverlay={state.displayOptions.chakra}
+        hasOverlay={state.displayOptions.chakra || state.displayOptions.chakraDirections}
       />
     </div>
   );
