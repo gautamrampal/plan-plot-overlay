@@ -110,21 +110,6 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
   ctx.fillStyle = '#000000';
   ctx.fill();
   
-  // Draw degree markings
-  for (let i = 0; i < 360; i += 15) {
-    const angle = (i * Math.PI) / 180;
-    const innerR = radius * 0.95;
-    const outerR = radius * (i % 45 === 0 ? 1.05 : 1.02);
-    
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
-    ctx.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = i % 45 === 0 ? 2 : 1;
-    ctx.stroke();
-    
-    // Remove degree markings and their labels
-  }
   
   ctx.restore();
 };
