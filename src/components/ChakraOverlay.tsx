@@ -93,7 +93,17 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     
     ctx.save();
     ctx.translate(textX, textY);
-    ctx.rotate(-Math.PI / 2); // Rotate text to be vertical
+    
+    // Calculate rotation to keep text readable
+    let textRotation = -((rotation - 90) * Math.PI) / 180; // Counter-rotate to keep text upright
+    
+    // Adjust text rotation based on position to avoid upside-down text
+    const normalizedAngle = (textAngle + 2 * Math.PI) % (2 * Math.PI);
+    if (normalizedAngle > Math.PI / 2 && normalizedAngle < 3 * Math.PI / 2) {
+      textRotation += Math.PI; // Flip text 180 degrees if it would be upside down
+    }
+    
+    ctx.rotate(textRotation);
     
     ctx.fillStyle = '#dc2626'; // Red color
     ctx.font = `bold ${Math.max(10, radius * 0.04)}px Arial`;
