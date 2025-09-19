@@ -82,20 +82,19 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     
     // Draw text labels for all zones
     const textAngle = (startAngle + endAngle) / 2;
-    const textRadius = radius * 0.65;
+    const textRadius = radius * 1.15;
     const textX = Math.cos(textAngle) * textRadius;
     const textY = Math.sin(textAngle) * textRadius;
     
     ctx.save();
     ctx.translate(textX, textY);
-    ctx.rotate(textAngle + Math.PI / 2);
     
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `${Math.max(8, radius * 0.035)}px Arial`;
+    ctx.fillStyle = '#333333';
+    ctx.font = `${Math.max(10, radius * 0.04)}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
     ctx.strokeText(zone.name, 0, 0);
     ctx.fillText(zone.name, 0, 0);
     
