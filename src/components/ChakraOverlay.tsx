@@ -86,20 +86,53 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx,
     const endAngle = (zone.endAngle * Math.PI) / 180;
     const outerRadius = radius * zone.outerRadius;
     
-    // Draw the sector from center to outer radius
-    ctx.beginPath();
-    ctx.moveTo(0, 0); // Start from center
-    ctx.arc(0, 0, outerRadius, startAngle, endAngle);
-    ctx.lineTo(0, 0); // Connect back to center
-    ctx.closePath();
-    
-    ctx.fillStyle = '#ffffff20'; // Light transparent fill
-    ctx.fill();
-    
-    // Draw border
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    if (constrainToPlot && plotBounds) {
+      // For chakra directions, draw lines to plot corners instead of circular sectors
+      const midAngle = zone.startAngle === 337.5 && zone.endAngle === 22.5 ? 0 : (zone.startAngle + zone.endAngle) / 2;
+      const angleRad = (midAngle * Math.PI) / 180;
+      
+      // Calculate line endpoint based on plot bounds
+      const cos = Math.cos(angleRad);
+      const sin = Math.sin(angleRad);
+      
+      // Find intersection with plot boundary
+      let lineEndX, lineEndY;
+      if (Math.abs(cos) > Math.abs(sin)) {
+        // Hit vertical boundary
+        const boundaryX = cos > 0 ? plotBounds.width / 2 : -plotBounds.width / 2;
+        lineEndX = boundaryX;
+        lineEndY = boundaryX * Math.tan(angleRad);
+      } else {
+        // Hit horizontal boundary  
+        const boundaryY = sin > 0 ? plotBounds.height / 2 : -plotBounds.height / 2;
+        lineEndY = boundaryY;
+        lineEndX = boundaryY / Math.tan(angleRad);
+      }
+      
+      // Draw line from center to plot boundary
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(lineEndX, lineEndY);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    } else {
+      // Regular chakra overlay with circular sectors
+      // Draw the sector from center to outer radius
+      ctx.beginPath();
+      ctx.moveTo(0, 0); // Start from center
+      ctx.arc(0, 0, outerRadius, startAngle, endAngle);
+      ctx.lineTo(0, 0); // Connect back to center
+      ctx.closePath();
+      
+      ctx.fillStyle = '#ffffff20'; // Light transparent fill
+      ctx.fill();
+      
+      // Draw border
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
     
     // Calculate text angle, handling zones that cross 0° and special positioning for North
     let textAngle;
