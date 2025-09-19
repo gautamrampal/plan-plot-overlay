@@ -71,7 +71,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     ctx.fill();
     
     // Draw border
-    ctx.strokeStyle = '#ffffff40';
+    ctx.strokeStyle = '#000000';
     ctx.lineWidth = 1;
     ctx.stroke();
     
@@ -84,13 +84,10 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     ctx.save();
     ctx.translate(textX, textY);
     
-    ctx.fillStyle = '#333333';
+    ctx.fillStyle = '#000000';
     ctx.font = `${Math.max(10, radius * 0.04)}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.strokeText(zone.name, 0, 0);
     ctx.fillText(zone.name, 0, 0);
     
     ctx.restore();
@@ -101,7 +98,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
   ctx.arc(0, 0, radius * 0.3, 0, 2 * Math.PI);
   ctx.fillStyle = '#ffffff';
   ctx.fill();
-  ctx.strokeStyle = '#333333';
+  ctx.strokeStyle = '#000000';
   ctx.lineWidth = 2;
   ctx.stroke();
   
@@ -111,7 +108,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
   ctx.lineTo(radius * 0.15, 0);
   ctx.moveTo(0, -radius * 0.15);
   ctx.lineTo(0, radius * 0.15);
-  ctx.strokeStyle = '#333333';
+  ctx.strokeStyle = '#000000';
   ctx.lineWidth = 2;
   ctx.stroke();
   
@@ -124,7 +121,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
     ctx.beginPath();
     ctx.moveTo(Math.cos(angle) * innerR, Math.sin(angle) * innerR);
     ctx.lineTo(Math.cos(angle) * outerR, Math.sin(angle) * outerR);
-    ctx.strokeStyle = '#333333';
+    ctx.strokeStyle = '#000000';
     ctx.lineWidth = i % 45 === 0 ? 2 : 1;
     ctx.stroke();
     
@@ -134,7 +131,7 @@ export const drawChakraOverlay = ({ center, rotation, scale, opacity, size, ctx 
       const textX = Math.cos(angle) * textR;
       const textY = Math.sin(angle) * textR;
       
-      ctx.fillStyle = '#333333';
+      ctx.fillStyle = '#000000';
       ctx.font = `${Math.max(10, radius * 0.06)}px Arial`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
