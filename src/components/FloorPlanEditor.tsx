@@ -35,6 +35,8 @@ export interface FloorPlanState {
   isPlottingComplete: boolean;
   notes: string;
   planetPositions: Planet[];
+  planetOpacity: number;
+  planetScale: number;
   displayOptions: {
     directions: boolean;
     directionsTwo: boolean;
@@ -65,6 +67,8 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     isPlottingComplete: false,
     notes: '',
     planetPositions: [],
+    planetOpacity: 0.8,
+    planetScale: 1,
     displayOptions: {
       directions: false,
       directionsTwo: false,
@@ -176,6 +180,14 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     }));
   };
 
+  const handlePlanetOpacityChange = (opacity: number) => {
+    setState(prev => ({ ...prev, planetOpacity: opacity }));
+  };
+
+  const handlePlanetScaleChange = (scale: number) => {
+    setState(prev => ({ ...prev, planetScale: scale }));
+  };
+
   const handleNotesChange = (notes: string) => {
     setState(prev => ({ ...prev, notes }));
   };
@@ -190,10 +202,17 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       };
 
       if (value) {
-        // Disable all other display options when enabling one
-        Object.keys(newState.displayOptions).forEach(key => {
-          newState.displayOptions[key as keyof typeof newState.displayOptions] = key === option;
-        });
+        // For planets, don't disable other options - planets can coexist
+        if (option === 'planets') {
+          newState.displayOptions.planets = true;
+        } else {
+          // Disable all other display options when enabling non-planet options
+          Object.keys(newState.displayOptions).forEach(key => {
+            if (key !== 'planets') {
+              newState.displayOptions[key as keyof typeof newState.displayOptions] = key === option;
+            }
+          });
+        }
 
         // Initialize planet positions when planets option is enabled
         if (option === 'planets') {
@@ -204,7 +223,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
           const center = newState.center;
           
           if (center && newState.planetPositions.length === 0) {
-            const radius = 150;
+            const radius = 120 * newState.planetScale;
             const angleStep = (2 * Math.PI) / planetNames.length;
             newState.planetPositions = planetNames.map((name, index) => ({
               id: `planet-${name.toLowerCase()}`,
@@ -382,9 +401,13 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         rotation={state.overlayRotation}
         scale={state.overlayScale}
         opacity={state.overlayOpacity}
+        planetOpacity={state.planetOpacity}
+        planetScale={state.planetScale}
         onRotationChange={handleRotationChange}
         onScaleChange={handleScaleChange}
         onOpacityChange={handleOpacityChange}
+        onPlanetOpacityChange={handlePlanetOpacityChange}
+        onPlanetScaleChange={handlePlanetScaleChange}
         displayOptions={state.displayOptions}
         onDisplayOptionChange={handleDisplayOptionChange}
         onToggleOverlay={() => {}}

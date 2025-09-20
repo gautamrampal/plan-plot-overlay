@@ -13,9 +13,13 @@ interface OverlayControlsProps {
   rotation: number;
   scale: number;
   opacity: number;
+  planetOpacity: number;
+  planetScale: number;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
+  onPlanetOpacityChange: (opacity: number) => void;
+  onPlanetScaleChange: (scale: number) => void;
   displayOptions: {
     directions: boolean;
     directionsTwo: boolean;
@@ -37,9 +41,13 @@ export const OverlayControls = ({
   rotation,
   scale,
   opacity,
+  planetOpacity,
+  planetScale,
   onRotationChange,
   onScaleChange,
   onOpacityChange,
+  onPlanetOpacityChange,
+  onPlanetScaleChange,
   displayOptions,
   onDisplayOptionChange,
   onToggleOverlay,
@@ -236,8 +244,68 @@ export const OverlayControls = ({
           </div>
         )}
 
-        {/* Display Options - Now below compass controls */}
-        <div className={`space-y-4 ${hasOverlay ? 'border-t pt-4' : ''}`}>
+        {/* Planet Controls - Show if planets are enabled */}
+        {displayOptions.planets && isPlottingComplete && (
+          <div className="space-y-4 border-t pt-4">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Move className="w-4 h-4" />
+              Planet Controls
+            </Label>
+            
+            {/* Planet Scale Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Planet Scale</Label>
+                <span className="text-sm text-muted-foreground">{planetScale.toFixed(1)}x</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPlanetScaleChange(Math.max(0.1, planetScale - 0.1))}
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
+                >
+                  -
+                </Button>
+                <Slider
+                  value={[planetScale]}
+                  onValueChange={(value) => onPlanetScaleChange(value[0])}
+                  max={3}
+                  min={0.1}
+                  step={0.1}
+                  className="flex-1 transition-all duration-300"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onPlanetScaleChange(Math.min(3, planetScale + 0.1))}
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
+                >
+                  <Expand className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Planet Opacity Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Planet Opacity</Label>
+                <span className="text-sm text-muted-foreground">{Math.round(planetOpacity * 100)}%</span>
+              </div>
+              <Slider
+                value={[planetOpacity]}
+                onValueChange={(value) => onPlanetOpacityChange(value[0])}
+                max={1}
+                min={0}
+                step={0.01}
+                className="w-full transition-all duration-300"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Display Options - Now below planet controls */}
+        <div className={`space-y-4 ${(hasOverlay || displayOptions.planets) ? 'border-t pt-4' : ''}`}>
           <Label className="text-sm font-medium">Display Features</Label>
           
           <div className="space-y-3">

@@ -396,39 +396,48 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         
         const planets = state.planetPositions || [];
         planets.forEach((planet) => {
+          const baseRadius = 20;
+          const scaledRadius = baseRadius * (state.planetScale || 1);
+          
+          // Apply planet opacity
+          ctx.save();
+          ctx.globalAlpha = state.planetOpacity || 0.8;
+          
           // Draw planet background circle
           ctx.fillStyle = '#10b981';
           ctx.beginPath();
-          ctx.arc(planet.x, planet.y, 20, 0, 2 * Math.PI);
+          ctx.arc(planet.x, planet.y, scaledRadius, 0, 2 * Math.PI);
           ctx.fill();
 
           // Draw planet border
           ctx.strokeStyle = '#059669';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.arc(planet.x, planet.y, 20, 0, 2 * Math.PI);
+          ctx.arc(planet.x, planet.y, scaledRadius, 0, 2 * Math.PI);
           ctx.stroke();
 
           // Draw planet name
           ctx.fillStyle = 'white';
-          ctx.font = '12px Arial';
+          ctx.font = `${Math.max(10, 12 * (state.planetScale || 1))}px Arial`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(planet.name, planet.x, planet.y);
 
-          // Draw selection highlight if dragging
+          ctx.restore();
+
+          // Draw selection highlight if dragging (without opacity)
           if (draggedPlanet === planet.id) {
             ctx.strokeStyle = '#3b82f6';
             ctx.lineWidth = 3;
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
-            ctx.arc(planet.x, planet.y, 25, 0, 2 * Math.PI);
+            ctx.arc(planet.x, planet.y, scaledRadius + 5, 0, 2 * Math.PI);
             ctx.stroke();
             ctx.setLineDash([]);
           }
         });
       }
-    }, [floorPlanImg, imageLoaded, directionsImg, directionsImageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.displayOptions.directions, state.displayOptions.planets, state.planetPositions, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected, draggedPlanet]);
+    }, [floorPlanImg, imageLoaded, directionsImg, directionsImageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.displayOptions.directions, state.displayOptions.planets, state.planetPositions, state.planetOpacity, state.planetScale, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected, draggedPlanet]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -441,8 +450,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       // Check if clicking on a planet first
       if (state.displayOptions.planets && state.isPlottingComplete) {
         for (const planet of state.planetPositions) {
+          const scaledRadius = 20 * (state.planetScale || 1);
           const distance = Math.sqrt((x - planet.x) ** 2 + (y - planet.y) ** 2);
-          if (distance <= 20) {
+          if (distance <= scaledRadius) {
             // Planet clicked - this will be handled by mouse down for dragging
             return;
           }
@@ -487,8 +497,9 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       // Check if clicking on a planet first
       if (state.displayOptions.planets && state.isPlottingComplete) {
         for (const planet of state.planetPositions) {
+          const scaledRadius = 20 * (state.planetScale || 1);
           const distance = Math.sqrt((x - planet.x) ** 2 + (y - planet.y) ** 2);
-          if (distance <= 20) {
+          if (distance <= scaledRadius) {
             setDraggedPlanet(planet.id);
             setDragOffset({
               x: x - planet.x,
