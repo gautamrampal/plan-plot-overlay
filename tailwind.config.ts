@@ -52,6 +52,22 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				emerald: {
+					primary: 'hsl(var(--emerald-primary))',
+					light: 'hsl(var(--emerald-light))',
+					dark: 'hsl(var(--emerald-dark))'
+				},
+				sage: {
+					light: 'hsl(var(--sage-light))',
+					medium: 'hsl(var(--sage-medium))'
+				},
+				warm: {
+					gray: 'hsl(var(--warm-gray))'
+				},
+				text: {
+					dark: 'hsl(var(--text-dark))',
+					medium: 'hsl(var(--text-medium))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
