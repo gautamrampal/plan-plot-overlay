@@ -31,7 +31,6 @@ interface OverlayControlsProps {
     entrances: boolean;
     chakra: boolean;
     chakraDirections: boolean;
-    
     planets: boolean;
     signs: boolean;
     vastu: boolean;
@@ -121,7 +120,6 @@ export const OverlayControls = ({
     if (displayOptions.directions) return 'Directions';
     if (displayOptions.chakra) return 'Chakra';
     if (displayOptions.chakraDirections) return 'Chakra Directions';
-    
     return 'Overlay';
   };
 
@@ -440,7 +438,6 @@ export const OverlayControls = ({
                   <ToggleLeft className="w-4 h-4 text-muted-foreground" />
                   <Label className="text-sm capitalize">
                     {key === 'chakraDirections' ? 'Chakra Directions' : 
-                     
                      key === 'directionsTwo' ? 'Directions Two' : 
                      key === 'signs' ? 'Zodiac Signs' : key}
                   </Label>

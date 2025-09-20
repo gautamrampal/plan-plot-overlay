@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { FloorPlanState, Point, Planet, Sign } from './FloorPlanEditor';
 import { Plus, Minus } from 'lucide-react';
 import { drawChakraOverlay } from './ChakraOverlay';
-
 import directionsCompass from '@/assets/directions-compass.png';
 import directionsCompassTwo from '@/assets/directions-compass-two.png';
 
@@ -279,7 +278,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
           
           if (plotBounds) {
             // For regular chakra, use normal size calculation
-            // For chakra directions and doors, constrain size to plot bounds
+            // For chakra directions, constrain size to plot bounds
             let overlaySize;
             if (state.displayOptions.chakraDirections) {
               // Calculate overlay size to fit exactly within plot bounds
@@ -294,20 +293,18 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             const centerX = state.overlayPosition?.x ?? state.center.x;
             const centerY = state.overlayPosition?.y ?? state.center.y;
 
-            // Draw the appropriate chakra overlay
+            // Draw the chakra overlay
             console.log('Drawing chakra with rotation:', state.overlayRotation);
-            {
-              drawChakraOverlay({
-                center: { x: centerX, y: centerY, id: 'overlay-center' },
-                rotation: state.overlayRotation,
-                scale: state.overlayScale,
-                opacity: state.overlayOpacity,
-                size: overlaySize,
-                ctx,
-                plotBounds,
-                constrainToPlot: state.displayOptions.chakraDirections
-              });
-            }
+            drawChakraOverlay({
+              center: { x: centerX, y: centerY, id: 'overlay-center' },
+              rotation: state.overlayRotation,
+              scale: state.overlayScale,
+              opacity: state.overlayOpacity,
+              size: overlaySize,
+              ctx,
+              plotBounds,
+              constrainToPlot: state.displayOptions.chakraDirections
+            });
 
             // Store overlay bounds for selection detection
             setOverlayBounds({
@@ -525,7 +522,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         }
       }
 
-      // Check if clicking on overlay (chakra, directions, or doors)
+      // Check if clicking on overlay (chakra or directions)
       if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions)) {
         const clickedOnOverlay = 
           x >= overlayBounds.x && 
