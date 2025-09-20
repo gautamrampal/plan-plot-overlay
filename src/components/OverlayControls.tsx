@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { RotateCcw, RotateCw, Expand, ToggleLeft, Move } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -64,6 +65,7 @@ export const OverlayControls = ({
   isPlottingComplete,
 }: OverlayControlsProps) => {
   const { toast } = useToast();
+  const [degreeInput, setDegreeInput] = useState('');
   const handleRotationChange = (delta: number) => {
     const newRotation = (rotation + delta) % 360;
     onRotationChange(newRotation < 0 ? newRotation + 360 : newRotation);
@@ -85,6 +87,27 @@ export const OverlayControls = ({
     }
     console.log('Calling onDisplayOptionChange');
     onDisplayOptionChange(key, checked);
+  };
+
+  const handleDegreeInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const degree = parseFloat(degreeInput);
+      if (!isNaN(degree)) {
+        const normalizedDegree = ((degree % 360) + 360) % 360;
+        onRotationChange(normalizedDegree);
+        setDegreeInput('');
+        toast({
+          title: "Rotation Applied",
+          description: `Chakra rotated to ${normalizedDegree}°`,
+        });
+      } else {
+        toast({
+          title: "Invalid Input",
+          description: "Please enter a valid number",
+          variant: "destructive",
+        });
+      }
+    }
   };
 
   // Get the active overlay type for the label
@@ -378,6 +401,26 @@ export const OverlayControls = ({
           <Label className="text-sm font-medium">Display Features</Label>
           
           <div className="space-y-3">
+            {/* Degree Input - First option for chakra rotation */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <RotateCw className="w-4 h-4 text-muted-foreground" />
+                <Label className="text-sm">Rotate Degree</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  placeholder="0-360"
+                  value={degreeInput}
+                  onChange={(e) => setDegreeInput(e.target.value)}
+                  onKeyDown={handleDegreeInput}
+                  className="w-20 h-8 text-sm"
+                  disabled={!isPlottingComplete || (!displayOptions.chakra && !displayOptions.chakraDirections)}
+                />
+                <span className="text-xs text-muted-foreground">°</span>
+              </div>
+            </div>
+            
             {['chakra', 'chakraDirections', 'directions', 'directionsTwo', 'entrances', 'planets', 'signs', 'vastu', 'analysis'].map((key) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
