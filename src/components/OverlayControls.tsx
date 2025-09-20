@@ -15,11 +15,15 @@ interface OverlayControlsProps {
   opacity: number;
   planetOpacity: number;
   planetScale: number;
+  signOpacity: number;
+  signScale: number;
   onRotationChange: (rotation: number) => void;
   onScaleChange: (scale: number) => void;
   onOpacityChange: (opacity: number) => void;
   onPlanetOpacityChange: (opacity: number) => void;
   onPlanetScaleChange: (scale: number) => void;
+  onSignOpacityChange: (opacity: number) => void;
+  onSignScaleChange: (scale: number) => void;
   displayOptions: {
     directions: boolean;
     directionsTwo: boolean;
@@ -27,6 +31,7 @@ interface OverlayControlsProps {
     chakra: boolean;
     chakraDirections: boolean;
     planets: boolean;
+    signs: boolean;
     vastu: boolean;
     analysis: boolean;
   };
@@ -43,11 +48,15 @@ export const OverlayControls = ({
   opacity,
   planetOpacity,
   planetScale,
+  signOpacity,
+  signScale,
   onRotationChange,
   onScaleChange,
   onOpacityChange,
   onPlanetOpacityChange,
   onPlanetScaleChange,
+  onSignOpacityChange,
+  onSignScaleChange,
   displayOptions,
   onDisplayOptionChange,
   onToggleOverlay,
@@ -304,18 +313,79 @@ export const OverlayControls = ({
           </div>
         )}
 
-        {/* Display Options - Now below planet controls */}
-        <div className={`space-y-4 ${(hasOverlay || displayOptions.planets) ? 'border-t pt-4' : ''}`}>
+        {/* Sign Controls - Show if signs are enabled */}
+        {displayOptions.signs && isPlottingComplete && (
+          <div className="space-y-4 border-t pt-4">
+            <Label className="text-sm font-medium flex items-center gap-2">
+              <Move className="w-4 h-4" />
+              Zodiac Sign Controls
+            </Label>
+            
+            {/* Sign Scale Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Sign Scale</Label>
+                <span className="text-sm text-muted-foreground">{signScale.toFixed(1)}x</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onSignScaleChange(Math.max(0.1, signScale - 0.1))}
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
+                >
+                  -
+                </Button>
+                <Slider
+                  value={[signScale]}
+                  onValueChange={(value) => onSignScaleChange(value[0])}
+                  max={3}
+                  min={0.1}
+                  step={0.1}
+                  className="flex-1 transition-all duration-300"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onSignScaleChange(Math.min(3, signScale + 0.1))}
+                  className="h-8 w-8 p-0 transition-all duration-200 hover:scale-105"
+                >
+                  <Expand className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Sign Opacity Control */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm">Sign Opacity</Label>
+                <span className="text-sm text-muted-foreground">{Math.round(signOpacity * 100)}%</span>
+              </div>
+              <Slider
+                value={[signOpacity]}
+                onValueChange={(value) => onSignOpacityChange(value[0])}
+                max={1}
+                min={0}
+                step={0.01}
+                className="w-full transition-all duration-300"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Display Options - Now below all controls */}
+        <div className={`space-y-4 ${(hasOverlay || displayOptions.planets || displayOptions.signs) ? 'border-t pt-4' : ''}`}>
           <Label className="text-sm font-medium">Display Features</Label>
           
           <div className="space-y-3">
-            {['chakra', 'chakraDirections', 'directions', 'directionsTwo', 'entrances', 'planets', 'vastu', 'analysis'].map((key) => (
+            {['chakra', 'chakraDirections', 'directions', 'directionsTwo', 'entrances', 'planets', 'signs', 'vastu', 'analysis'].map((key) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ToggleLeft className="w-4 h-4 text-muted-foreground" />
                   <Label className="text-sm capitalize">
                     {key === 'chakraDirections' ? 'Chakra Directions' : 
-                     key === 'directionsTwo' ? 'Directions Two' : key}
+                     key === 'directionsTwo' ? 'Directions Two' : 
+                     key === 'signs' ? 'Zodiac Signs' : key}
                   </Label>
                 </div>
                 <Switch

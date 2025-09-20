@@ -23,6 +23,13 @@ export interface Planet {
   y: number;
 }
 
+export interface Sign {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+}
+
 export interface FloorPlanState {
   floorPlanImage: string | null;
   points: Point[];
@@ -37,6 +44,9 @@ export interface FloorPlanState {
   planetPositions: Planet[];
   planetOpacity: number;
   planetScale: number;
+  signPositions: Sign[];
+  signOpacity: number;
+  signScale: number;
   displayOptions: {
     directions: boolean;
     directionsTwo: boolean;
@@ -44,6 +54,7 @@ export interface FloorPlanState {
     chakra: boolean;
     chakraDirections: boolean;
     planets: boolean;
+    signs: boolean;
     vastu: boolean;
     analysis: boolean;
   };
@@ -69,6 +80,9 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     planetPositions: [],
     planetOpacity: 0.8,
     planetScale: 1,
+    signPositions: [],
+    signOpacity: 0.8,
+    signScale: 1,
     displayOptions: {
       directions: false,
       directionsTwo: false,
@@ -76,6 +90,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       chakra: false,
       chakraDirections: false,
       planets: false,
+      signs: false,
       vastu: false,
       analysis: false,
     },
@@ -188,6 +203,23 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     setState(prev => ({ ...prev, planetScale: scale }));
   };
 
+  const handleSignMove = (signId: string, x: number, y: number) => {
+    setState(prev => ({
+      ...prev,
+      signPositions: prev.signPositions.map(sign =>
+        sign.id === signId ? { ...sign, x, y } : sign
+      ),
+    }));
+  };
+
+  const handleSignOpacityChange = (opacity: number) => {
+    setState(prev => ({ ...prev, signOpacity: opacity }));
+  };
+
+  const handleSignScaleChange = (scale: number) => {
+    setState(prev => ({ ...prev, signScale: scale }));
+  };
+
   const handleNotesChange = (notes: string) => {
     setState(prev => ({ ...prev, notes }));
   };
@@ -202,13 +234,13 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       };
 
       if (value) {
-        // For planets, don't disable other options - planets can coexist
-        if (option === 'planets') {
-          newState.displayOptions.planets = true;
+        // For planets and signs, don't disable other options - they can coexist
+        if (option === 'planets' || option === 'signs') {
+          newState.displayOptions[option] = true;
         } else {
-          // Disable all other display options when enabling non-planet options
+          // Disable all other display options when enabling non-planet/sign options
           Object.keys(newState.displayOptions).forEach(key => {
-            if (key !== 'planets') {
+            if (key !== 'planets' && key !== 'signs') {
               newState.displayOptions[key as keyof typeof newState.displayOptions] = key === option;
             }
           });
@@ -243,12 +275,43 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
           }
         }
 
+        // Initialize sign positions when signs option is enabled
+        if (option === 'signs') {
+          console.log('Enabling signs option, center:', newState.center);
+          console.log('Current sign positions:', newState.signPositions.length);
+          
+          const signNames = ['Ar', 'Ta', 'Ge', 'Ca', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
+          const center = newState.center;
+          
+          if (center && newState.signPositions.length === 0) {
+            const radius = 200 * newState.signScale;
+            const angleStep = (2 * Math.PI) / signNames.length;
+            newState.signPositions = signNames.map((name, index) => ({
+              id: `sign-${name.toLowerCase()}`,
+              name,
+              x: center.x + Math.cos(index * angleStep) * radius,
+              y: center.y + Math.sin(index * angleStep) * radius,
+            }));
+            console.log('Created sign positions:', newState.signPositions);
+          } else if (!center) {
+            console.log('No center point available for sign initialization');
+            // Force signs option to false if no center
+            newState.displayOptions.signs = false;
+            toast.error('Please mark at least 3 points to enable signs');
+            return newState;
+          } else {
+            console.log('Sign positions already exist, keeping current positions');
+          }
+        }
+
         if (option === 'chakra') {
           toast.success('Chakra compass overlay enabled!');
         } else if (option === 'analysis') {
           toast.success('Vastu analysis chart enabled!');
         } else if (option === 'planets') {
           toast.success('Planet labels enabled! Drag to move them.');
+        } else if (option === 'signs') {
+          toast.success('Zodiac signs enabled! Drag to move them.');
         } else {
           toast.success(`${option.charAt(0).toUpperCase() + option.slice(1)} display enabled!`);
         }
@@ -389,6 +452,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
             onPointAdd={handlePointAdd}
             onOverlayMove={handleOverlayMove}
             onPlanetMove={handlePlanetMove}
+            onSignMove={handleSignMove}
           />
 
       {/* Show analysis chart when analysis is selected */}
@@ -403,11 +467,15 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         opacity={state.overlayOpacity}
         planetOpacity={state.planetOpacity}
         planetScale={state.planetScale}
+        signOpacity={state.signOpacity}
+        signScale={state.signScale}
         onRotationChange={handleRotationChange}
         onScaleChange={handleScaleChange}
         onOpacityChange={handleOpacityChange}
         onPlanetOpacityChange={handlePlanetOpacityChange}
         onPlanetScaleChange={handlePlanetScaleChange}
+        onSignOpacityChange={handleSignOpacityChange}
+        onSignScaleChange={handleSignScaleChange}
         displayOptions={state.displayOptions}
         onDisplayOptionChange={handleDisplayOptionChange}
         onToggleOverlay={() => {}}
