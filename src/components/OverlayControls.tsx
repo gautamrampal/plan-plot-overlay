@@ -91,9 +91,13 @@ export const OverlayControls = ({
 
   const handleDegreeInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
+      console.log('Degree input entered:', degreeInput);
       const degree = parseFloat(degreeInput);
+      console.log('Parsed degree:', degree);
       if (!isNaN(degree)) {
         const normalizedDegree = ((degree % 360) + 360) % 360;
+        console.log('Normalized degree:', normalizedDegree);
+        console.log('Calling onRotationChange with:', normalizedDegree);
         onRotationChange(normalizedDegree);
         setDegreeInput('');
         toast({
