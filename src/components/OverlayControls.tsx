@@ -91,19 +91,14 @@ export const OverlayControls = ({
 
   const handleDegreeInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      console.log('Degree input entered:', degreeInput);
       const degree = parseFloat(degreeInput);
-      console.log('Parsed degree:', degree);
       if (!isNaN(degree)) {
         const normalizedDegree = ((degree % 360) + 360) % 360;
-        console.log('Normalized degree:', normalizedDegree);
-        console.log('Setting rotation slider to:', normalizedDegree);
-        // Update the rotation slider value which will trigger the rotation
         onRotationChange(normalizedDegree);
-        // Keep the value in the input box - don't clear it
+        setDegreeInput('');
         toast({
           title: "Rotation Applied",
-          description: `Rotation set to ${normalizedDegree}°`,
+          description: `Chakra rotated to ${normalizedDegree}°`,
         });
       } else {
         toast({
@@ -417,14 +412,8 @@ export const OverlayControls = ({
                   type="number"
                   placeholder="0-360"
                   value={degreeInput}
-                  onChange={(e) => {
-                    console.log('Input value changed:', e.target.value);
-                    setDegreeInput(e.target.value);
-                  }}
-                  onKeyDown={(e) => {
-                    console.log('Key pressed:', e.key);
-                    handleDegreeInput(e);
-                  }}
+                  onChange={(e) => setDegreeInput(e.target.value)}
+                  onKeyDown={handleDegreeInput}
                   className="w-20 h-8 text-sm"
                   disabled={!isPlottingComplete || (!displayOptions.chakra && !displayOptions.chakraDirections)}
                 />
