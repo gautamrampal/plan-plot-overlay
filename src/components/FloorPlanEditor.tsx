@@ -226,6 +226,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
   };
 
   const handleDisplayOptionChange = (option: string, value: boolean) => {
+    console.log(`Setting ${option} to ${value}`);
     setState(prev => {
       const newState = {
         ...prev,
@@ -237,7 +238,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
       if (value) {
         // For planets and signs, don't disable other options - they can coexist
         if (option === 'planets' || option === 'signs') {
-          newState.displayOptions[option] = true;
+          newState.displayOptions[option as keyof typeof newState.displayOptions] = true;
         } else {
           // Disable all other display options when enabling non-planet/sign options
           Object.keys(newState.displayOptions).forEach(key => {
@@ -322,6 +323,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         toast.info(`${option.charAt(0).toUpperCase() + option.slice(1)} display disabled`);
       }
 
+      console.log('New display options state:', newState.displayOptions);
       return newState;
     });
   };

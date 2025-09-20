@@ -273,27 +273,18 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         }
 
         // Draw chakra overlay if enabled and plotting is complete
-        if ((state.displayOptions.chakra || state.displayOptions.chakraDirections) && state.center && state.isPlottingComplete) {
+        if (state.displayOptions.chakra && state.center && state.isPlottingComplete) {
           const plotBounds = calculatePlotBounds(state.points);
           
           if (plotBounds) {
-            // For regular chakra, use normal size calculation
-            // For chakra directions, constrain size to plot bounds
-            let overlaySize;
-            if (state.displayOptions.chakraDirections) {
-              // Calculate overlay size to fit exactly within plot bounds
-              const maxSize = Math.min(plotBounds.width, plotBounds.height);
-              overlaySize = maxSize * state.overlayScale;
-            } else {
-              // Normal chakra overlay size (can extend beyond plot)
-              overlaySize = 300 * state.overlayScale;
-            }
+            // Normal chakra overlay size (can extend beyond plot)
+            const overlaySize = 300 * state.overlayScale;
 
             // Use custom position if available, otherwise center on the center point
             const centerX = state.overlayPosition?.x ?? state.center.x;
             const centerY = state.overlayPosition?.y ?? state.center.y;
 
-            // Draw the chakra overlay
+            // Draw the chakra overlay (zone-based circular overlay)
             console.log('Drawing chakra with rotation:', state.overlayRotation);
             drawChakraOverlay({
               center: { x: centerX, y: centerY, id: 'overlay-center' },
@@ -303,7 +294,57 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               size: overlaySize,
               ctx,
               plotBounds,
-              constrainToPlot: state.displayOptions.chakraDirections
+              constrainToPlot: false
+            });
+
+            // Store overlay bounds for selection detection
+            setOverlayBounds({
+              x: centerX - overlaySize / 2,
+              y: centerY - overlaySize / 2,
+              width: overlaySize,
+              height: overlaySize,
+            });
+
+            // Draw selection border if overlay is selected
+            if (overlaySelected) {
+              ctx.save();
+              ctx.strokeStyle = '#3b82f6';
+              ctx.lineWidth = 3;
+              ctx.setLineDash([10, 5]);
+              ctx.globalAlpha = 0.8;
+              ctx.beginPath();
+              ctx.arc(centerX, centerY, overlaySize / 2, 0, 2 * Math.PI);
+              ctx.stroke();
+              ctx.setLineDash([]);
+              ctx.restore();
+            }
+          }
+        }
+
+        // Draw chakra directions overlay if enabled and plotting is complete
+        if (state.displayOptions.chakraDirections && state.center && state.isPlottingComplete) {
+          const plotBounds = calculatePlotBounds(state.points);
+          
+          if (plotBounds) {
+            // Calculate overlay size to fit exactly within plot bounds
+            const maxSize = Math.min(plotBounds.width, plotBounds.height);
+            const overlaySize = maxSize * state.overlayScale;
+
+            // Use custom position if available, otherwise center on the center point
+            const centerX = state.overlayPosition?.x ?? state.center.x;
+            const centerY = state.overlayPosition?.y ?? state.center.y;
+
+            // Draw the chakra directions overlay (constrained to plot)
+            console.log('Drawing chakra directions with rotation:', state.overlayRotation);
+            drawChakraOverlay({
+              center: { x: centerX, y: centerY, id: 'overlay-center' },
+              rotation: state.overlayRotation,
+              scale: state.overlayScale,
+              opacity: state.overlayOpacity,
+              size: overlaySize,
+              ctx,
+              plotBounds,
+              constrainToPlot: true
             });
 
             // Store overlay bounds for selection detection
