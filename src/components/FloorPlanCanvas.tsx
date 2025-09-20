@@ -294,6 +294,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
             const centerY = state.overlayPosition?.y ?? state.center.y;
 
             // Draw the chakra overlay
+            console.log('Drawing chakra with rotation:', state.overlayRotation);
             drawChakraOverlay({
               center: { x: centerX, y: centerY, id: 'overlay-center' },
               rotation: state.overlayRotation,

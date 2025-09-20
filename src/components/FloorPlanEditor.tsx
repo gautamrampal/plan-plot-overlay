@@ -168,6 +168,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
   };
 
   const handleRotationChange = (rotation: number) => {
+    console.log('FloorPlanEditor handleRotationChange called with:', rotation);
     setState(prev => ({ ...prev, overlayRotation: rotation }));
   };
 
