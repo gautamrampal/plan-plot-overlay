@@ -13,6 +13,7 @@ export const RegisterForm = () => {
     firstName: '',
     lastName: '',
     email: '',
+    mobile: '',
     password: '',
     confirmPassword: ''
   });
@@ -112,6 +113,19 @@ export const RegisterForm = () => {
                   type="email"
                   placeholder="Enter your email"
                   value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="mobile">Mobile Number</Label>
+                <Input
+                  id="mobile"
+                  name="mobile"
+                  type="tel"
+                  placeholder="Enter your mobile number"
+                  value={formData.mobile}
                   onChange={handleChange}
                   required
                 />
