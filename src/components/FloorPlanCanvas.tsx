@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { FloorPlanState, Point, Planet, Sign } from './FloorPlanEditor';
 import { Plus, Minus } from 'lucide-react';
 import { drawChakraOverlay } from './ChakraOverlay';
-import { drawChakraDoorsOverlay } from './ChakraDoorsOverlay';
+
 import directionsCompass from '@/assets/directions-compass.png';
 import directionsCompassTwo from '@/assets/directions-compass-two.png';
 
@@ -274,14 +274,14 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         }
 
         // Draw chakra overlay if enabled and plotting is complete
-        if ((state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.chakraDoors) && state.center && state.isPlottingComplete) {
+        if ((state.displayOptions.chakra || state.displayOptions.chakraDirections) && state.center && state.isPlottingComplete) {
           const plotBounds = calculatePlotBounds(state.points);
           
           if (plotBounds) {
             // For regular chakra, use normal size calculation
             // For chakra directions and doors, constrain size to plot bounds
             let overlaySize;
-            if (state.displayOptions.chakraDirections || state.displayOptions.chakraDoors) {
+            if (state.displayOptions.chakraDirections) {
               // Calculate overlay size to fit exactly within plot bounds
               const maxSize = Math.min(plotBounds.width, plotBounds.height);
               overlaySize = maxSize * state.overlayScale;
@@ -296,18 +296,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
 
             // Draw the appropriate chakra overlay
             console.log('Drawing chakra with rotation:', state.overlayRotation);
-            if (state.displayOptions.chakraDoors) {
-              drawChakraDoorsOverlay({
-                center: { x: centerX, y: centerY, id: 'overlay-center' },
-                rotation: state.overlayRotation,
-                scale: state.overlayScale,
-                opacity: state.overlayOpacity,
-                size: overlaySize,
-                ctx,
-                plotBounds,
-                constrainToPlot: true
-              });
-            } else {
+            {
               drawChakraOverlay({
                 center: { x: centerX, y: centerY, id: 'overlay-center' },
                 rotation: state.overlayRotation,
@@ -537,7 +526,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       }
 
       // Check if clicking on overlay (chakra, directions, or doors)
-      if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.chakraDoors || state.displayOptions.directions)) {
+      if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions)) {
         const clickedOnOverlay = 
           x >= overlayBounds.x && 
           x <= overlayBounds.x + overlayBounds.width &&

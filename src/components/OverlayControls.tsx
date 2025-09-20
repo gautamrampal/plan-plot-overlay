@@ -31,7 +31,7 @@ interface OverlayControlsProps {
     entrances: boolean;
     chakra: boolean;
     chakraDirections: boolean;
-    chakraDoors: boolean;
+    
     planets: boolean;
     signs: boolean;
     vastu: boolean;
@@ -121,7 +121,7 @@ export const OverlayControls = ({
     if (displayOptions.directions) return 'Directions';
     if (displayOptions.chakra) return 'Chakra';
     if (displayOptions.chakraDirections) return 'Chakra Directions';
-    if (displayOptions.chakraDoors) return 'Chakra Doors';
+    
     return 'Overlay';
   };
 
@@ -434,13 +434,13 @@ export const OverlayControls = ({
               </div>
             </div>
             
-            {['chakra', 'chakraDirections', 'chakraDoors', 'directions', 'directionsTwo', 'entrances', 'planets', 'signs', 'vastu', 'analysis'].map((key) => (
+            {['chakra', 'chakraDirections', 'directions', 'directionsTwo', 'entrances', 'planets', 'signs', 'vastu', 'analysis'].map((key) => (
               <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ToggleLeft className="w-4 h-4 text-muted-foreground" />
                   <Label className="text-sm capitalize">
                     {key === 'chakraDirections' ? 'Chakra Directions' : 
-                     key === 'chakraDoors' ? 'Chakra Doors' :
+                     
                      key === 'directionsTwo' ? 'Directions Two' : 
                      key === 'signs' ? 'Zodiac Signs' : key}
                   </Label>
