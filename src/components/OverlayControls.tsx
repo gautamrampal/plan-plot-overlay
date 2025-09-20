@@ -100,7 +100,7 @@ export const OverlayControls = ({
         console.log('Setting rotation slider to:', normalizedDegree);
         // Update the rotation slider value which will trigger the rotation
         onRotationChange(normalizedDegree);
-        setDegreeInput('');
+        // Keep the value in the input box - don't clear it
         toast({
           title: "Rotation Applied",
           description: `Rotation set to ${normalizedDegree}°`,
