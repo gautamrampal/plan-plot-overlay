@@ -521,25 +521,30 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         }
       }
 
-      // Check if clicking on overlay
-      if (!overlaySelected || !overlayBounds) return;
+      // Check if clicking on overlay (chakra or directions)
+      if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions)) {
+        const clickedOnOverlay = 
+          x >= overlayBounds.x && 
+          x <= overlayBounds.x + overlayBounds.width &&
+          y >= overlayBounds.y && 
+          y <= overlayBounds.y + overlayBounds.height;
 
-      // Check if mouse is over overlay
-      const clickedOnOverlay = 
-        x >= overlayBounds.x && 
-        x <= overlayBounds.x + overlayBounds.width &&
-        y >= overlayBounds.y && 
-        y <= overlayBounds.y + overlayBounds.height;
+        if (clickedOnOverlay) {
+          setOverlaySelected(true);
+          return;
+        } else {
+          setOverlaySelected(false);
+        }
+      }
 
-      if (clickedOnOverlay) {
-        setIsDragging(true);
-        const centerX = state.overlayPosition?.x ?? state.center?.x ?? 0;
-        const centerY = state.overlayPosition?.y ?? state.center?.y ?? 0;
-        setDragOffset({
-          x: x - centerX,
-          y: y - centerY,
-        });
-        e.preventDefault();
+      // Handle point plotting - only allow if plotting is not complete
+      if (state.mode === 'plot' && !state.isPlottingComplete) {
+        const newPoint: Point = {
+          x,
+          y,
+          id: `point-${Date.now()}`,
+        };
+        onPointAdd(newPoint);
       }
     };
 
