@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, Compass, Home, Shield, Zap, Users, CheckCircle } from 'lucide-react';
+import { Star, Compass, Home, Shield, Zap, Users, CheckCircle, IndianRupee } from 'lucide-react';
 
 export const LandingPage = () => {
   const features = [
@@ -50,6 +50,53 @@ export const LandingPage = () => {
     }
   ];
 
+  const pricingPlans = [
+    {
+      name: "6 Months",
+      price: "499",
+      period: "/6 months",
+      description: "Perfect for small home projects",
+      features: [
+        "Up to 5 floor plan analyses",
+        "Basic Vastu recommendations",
+        "Direction compass overlay",
+        "Email support",
+        "PDF reports"
+      ],
+      popular: false
+    },
+    {
+      name: "Annual",
+      price: "999",
+      period: "/year",
+      description: "Best value for ongoing projects",
+      features: [
+        "Unlimited floor plan analyses",
+        "Advanced Vastu recommendations",
+        "All overlay tools",
+        "Priority support",
+        "Detailed PDF reports",
+        "Video consultations"
+      ],
+      popular: true
+    },
+    {
+      name: "Lifetime",
+      price: "1,499",
+      period: "one-time",
+      description: "Complete access forever",
+      features: [
+        "Everything in Annual",
+        "Lifetime updates",
+        "Personal Vastu consultant",
+        "Custom room recommendations",
+        "Priority feature requests",
+        "Exclusive webinars"
+      ],
+      popular: false
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sage-light to-warm-gray">
       {/* Navigation */}
@@ -63,6 +110,7 @@ export const LandingPage = () => {
             
             <div className="hidden md:flex items-center space-x-8">
               <a href="#features" className="text-text-medium hover:text-emerald-primary transition-colors">Features</a>
+              <a href="#pricing" className="text-text-medium hover:text-emerald-primary transition-colors">Pricing</a>
               <a href="#reviews" className="text-text-medium hover:text-emerald-primary transition-colors">Reviews</a>
               <a href="#about" className="text-text-medium hover:text-emerald-primary transition-colors">About</a>
             </div>
@@ -188,6 +236,63 @@ export const LandingPage = () => {
               Get Started Free
             </Button>
           </Link>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-16 bg-white/70">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-text-dark mb-4">
+              Choose Your Perfect Plan
+            </h2>
+            <p className="text-lg text-text-medium max-w-2xl mx-auto">
+              Start your Vastu journey with flexible pricing options designed for every need
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <Card key={index} className={`relative hover:shadow-xl transition-all duration-300 ${plan.popular ? 'border-emerald-primary border-2 scale-105' : 'border-sage-medium/30'}`}>
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-emerald-primary text-white px-4 py-1">
+                      Most Popular
+                    </Badge>
+                  </div>
+                )}
+                <CardHeader className="text-center pb-8">
+                  <CardTitle className="text-xl font-bold text-text-dark mb-2">{plan.name}</CardTitle>
+                  <div className="flex items-center justify-center mb-2">
+                    <IndianRupee className="w-6 h-6 text-emerald-primary" />
+                    <span className="text-4xl font-bold text-text-dark">{plan.price}</span>
+                    <span className="text-text-medium ml-1">{plan.period}</span>
+                  </div>
+                  <p className="text-text-medium text-sm">{plan.description}</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-center">
+                        <CheckCircle className="w-5 h-5 text-emerald-primary mr-3 flex-shrink-0" />
+                        <span className="text-text-medium text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="pt-6">
+                    <Link to="/register">
+                      <Button 
+                        className={`w-full ${plan.popular ? 'bg-emerald-primary hover:bg-emerald-dark' : 'bg-secondary hover:bg-secondary/80 text-text-dark'}`}
+                        size="lg"
+                      >
+                        Get Started
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
