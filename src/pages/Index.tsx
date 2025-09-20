@@ -31,7 +31,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-sage-light to-warm-gray flex flex-col">
       <Header 
         onLogout={handleLogout} 
         onReUpload={handleReUpload}
@@ -42,8 +42,8 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8">
           {!floorPlanUploaded && (
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-slate-800 mb-2">Floor Plan Analysis</h2>
-              <p className="text-lg text-slate-600">Upload, analyze, and enhance your floor plans with Vastu principles</p>
+              <h2 className="text-3xl font-bold text-text-dark mb-2">Floor Plan Analysis</h2>
+              <p className="text-lg text-text-medium">Upload, analyze, and enhance your floor plans with Vastu principles</p>
             </div>
           )}
           <FloorPlanEditor 

@@ -54,12 +54,12 @@ export const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-sage-light to-warm-gray flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Back to Home Link */}
         <Link 
           to="/" 
-          className="inline-flex items-center text-slate-600 hover:text-blue-600 transition-colors mb-6"
+          className="inline-flex items-center text-text-medium hover:text-emerald-primary transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
@@ -68,13 +68,13 @@ export const RegisterForm = () => {
         <Card className="w-full">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <Compass className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-slate-800">Vastu Tool Kit</span>
+              <Compass className="h-8 w-8 text-emerald-primary" />
+              <span className="text-2xl font-bold text-text-dark">Vastu Tool Kit</span>
             </div>
-            <CardTitle className="text-2xl font-bold text-slate-800">
+            <CardTitle className="text-2xl font-bold text-text-dark">
               Create Your Account
             </CardTitle>
-            <p className="text-slate-600 mt-2">Join thousands optimizing their spaces with Vastu</p>
+            <p className="text-text-medium mt-2">Join thousands optimizing their spaces with Vastu</p>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -173,9 +173,9 @@ export const RegisterForm = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-text-medium">
                 Already have an account?{' '}
-                <Link to="/login" className="text-blue-600 hover:underline font-medium">
+                <Link to="/login" className="text-emerald-primary hover:underline font-medium">
                   Sign in here
                 </Link>
               </p>
