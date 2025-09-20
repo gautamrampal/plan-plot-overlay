@@ -52,6 +52,20 @@ export const LandingPage = () => {
 
   const pricingPlans = [
     {
+      name: "7-Day Demo",
+      price: "0",
+      period: "/7 days",
+      description: "Try all features risk-free",
+      features: [
+        "Full access to all features",
+        "Up to 3 floor plan analyses",
+        "All overlay tools",
+        "Basic Vastu recommendations",
+        "Email support"
+      ],
+      popular: false
+    },
+    {
       name: "6 Months",
       price: "499",
       period: "/6 months",
@@ -251,7 +265,7 @@ export const LandingPage = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {pricingPlans.map((plan, index) => (
               <Card key={index} className={`relative hover:shadow-xl transition-all duration-300 ${plan.popular ? 'border-emerald-primary border-2 scale-105' : 'border-sage-medium/30'}`}>
                 {plan.popular && (
