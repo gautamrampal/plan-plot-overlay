@@ -16,6 +16,13 @@ export interface Point {
   id: string;
 }
 
+export interface Planet {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+}
+
 export interface FloorPlanState {
   floorPlanImage: string | null;
   points: Point[];
@@ -27,6 +34,7 @@ export interface FloorPlanState {
   overlayPosition?: Point;
   isPlottingComplete: boolean;
   notes: string;
+  planetPositions: Planet[];
   displayOptions: {
     directions: boolean;
     directionsTwo: boolean;
@@ -56,6 +64,7 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     overlayScale: 1,
     isPlottingComplete: false,
     notes: '',
+    planetPositions: [],
     displayOptions: {
       directions: false,
       directionsTwo: false,
@@ -158,6 +167,15 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
     }));
   };
 
+  const handlePlanetMove = (planetId: string, x: number, y: number) => {
+    setState(prev => ({
+      ...prev,
+      planetPositions: prev.planetPositions.map(planet =>
+        planet.id === planetId ? { ...planet, x, y } : planet
+      ),
+    }));
+  };
+
   const handleNotesChange = (notes: string) => {
     setState(prev => ({ ...prev, notes }));
   };
@@ -177,10 +195,28 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
           newState.displayOptions[key as keyof typeof newState.displayOptions] = key === option;
         });
 
+        // Initialize planet positions when planets option is enabled
+        if (option === 'planets' && newState.planetPositions.length === 0) {
+          const planetNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+          const center = newState.center;
+          if (center) {
+            const radius = 150;
+            const angleStep = (2 * Math.PI) / planetNames.length;
+            newState.planetPositions = planetNames.map((name, index) => ({
+              id: `planet-${name.toLowerCase()}`,
+              name,
+              x: center.x + Math.cos(index * angleStep) * radius,
+              y: center.y + Math.sin(index * angleStep) * radius,
+            }));
+          }
+        }
+
         if (option === 'chakra') {
           toast.success('Chakra compass overlay enabled!');
         } else if (option === 'analysis') {
           toast.success('Vastu analysis chart enabled!');
+        } else if (option === 'planets') {
+          toast.success('Planet labels enabled! Drag to move them.');
         } else {
           toast.success(`${option.charAt(0).toUpperCase() + option.slice(1)} display enabled!`);
         }
@@ -315,12 +351,13 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         onExportPDF={handleExportPDF}
       />
       
-      <FloorPlanCanvas
-        ref={canvasRef}
-        state={state}
-        onPointAdd={handlePointAdd}
-        onOverlayMove={handleOverlayMove}
-      />
+          <FloorPlanCanvas
+            ref={canvasRef}
+            state={state}
+            onPointAdd={handlePointAdd}
+            onOverlayMove={handleOverlayMove}
+            onPlanetMove={handlePlanetMove}
+          />
 
       {/* Show analysis chart when analysis is selected */}
       {state.displayOptions.analysis && (

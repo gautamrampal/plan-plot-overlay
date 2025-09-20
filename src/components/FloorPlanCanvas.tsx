@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FloorPlanState, Point } from './FloorPlanEditor';
+import { FloorPlanState, Point, Planet } from './FloorPlanEditor';
 import { Plus, Minus } from 'lucide-react';
 import { drawChakraOverlay } from './ChakraOverlay';
 import directionsCompass from '@/assets/directions-compass.png';
@@ -11,10 +11,11 @@ interface FloorPlanCanvasProps {
   state: FloorPlanState;
   onPointAdd: (point: Point) => void;
   onOverlayMove?: (x: number, y: number) => void;
+  onPlanetMove?: (planetId: string, x: number, y: number) => void;
 }
 
 export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProps>(
-  ({ state, onPointAdd, onOverlayMove }, ref) => {
+  ({ state, onPointAdd, onOverlayMove, onPlanetMove }, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
@@ -33,6 +34,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     const [directionsTwoImageLoaded, setDirectionsTwoImageLoaded] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+    const [draggedPlanet, setDraggedPlanet] = useState<string | null>(null);
 
     // Expose canvas ref to parent component
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
@@ -379,7 +381,43 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
         ctx.lineTo(state.center.x, state.center.y + 6);
         ctx.stroke();
       }
-    }, [floorPlanImg, imageLoaded, directionsImg, directionsImageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.displayOptions.directions, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected]);
+
+      // Draw planet labels if enabled
+      if (state.displayOptions.planets && state.isPlottingComplete) {
+        state.planetPositions.forEach((planet) => {
+          // Draw planet background circle
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(planet.x, planet.y, 20, 0, 2 * Math.PI);
+          ctx.fill();
+
+          // Draw planet border
+          ctx.strokeStyle = '#059669';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(planet.x, planet.y, 20, 0, 2 * Math.PI);
+          ctx.stroke();
+
+          // Draw planet name
+          ctx.fillStyle = 'white';
+          ctx.font = '12px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(planet.name, planet.x, planet.y);
+
+          // Draw selection highlight if dragging
+          if (draggedPlanet === planet.id) {
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.arc(planet.x, planet.y, 25, 0, 2 * Math.PI);
+            ctx.stroke();
+            ctx.setLineDash([]);
+          }
+        });
+      }
+    }, [floorPlanImg, imageLoaded, directionsImg, directionsImageLoaded, state.points, state.center, state.displayOptions.chakra, state.displayOptions.chakraDirections, state.displayOptions.directions, state.displayOptions.planets, state.planetPositions, state.overlayOpacity, state.overlayRotation, state.overlayScale, state.overlayPosition, state.isPlottingComplete, overlaySelected, draggedPlanet]);
 
     const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
@@ -388,6 +426,17 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+
+      // Check if clicking on a planet first
+      if (state.displayOptions.planets && state.isPlottingComplete) {
+        for (const planet of state.planetPositions) {
+          const distance = Math.sqrt((x - planet.x) ** 2 + (y - planet.y) ** 2);
+          if (distance <= 20) {
+            // Planet clicked - this will be handled by mouse down for dragging
+            return;
+          }
+        }
+      }
 
       // Check if clicking on overlay (chakra or directions)
       if (overlayBounds && (state.displayOptions.chakra || state.displayOptions.chakraDirections || state.displayOptions.directions)) {
@@ -417,14 +466,30 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     };
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!overlaySelected || !overlayBounds) return;
-
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+
+      // Check if clicking on a planet first
+      if (state.displayOptions.planets && state.isPlottingComplete) {
+        for (const planet of state.planetPositions) {
+          const distance = Math.sqrt((x - planet.x) ** 2 + (y - planet.y) ** 2);
+          if (distance <= 20) {
+            setDraggedPlanet(planet.id);
+            setDragOffset({
+              x: x - planet.x,
+              y: y - planet.y,
+            });
+            return;
+          }
+        }
+      }
+
+      // Check if clicking on overlay
+      if (!overlaySelected || !overlayBounds) return;
 
       // Check if mouse is over overlay
       const clickedOnOverlay = 
@@ -446,8 +511,6 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
     };
 
     const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!isDragging || !onOverlayMove) return;
-
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -455,14 +518,31 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
-      const newX = x - dragOffset.x;
-      const newY = y - dragOffset.y;
+      // Handle planet dragging
+      if (draggedPlanet && onPlanetMove) {
+        const newX = x - dragOffset.x;
+        const newY = y - dragOffset.y;
+        onPlanetMove(draggedPlanet, newX, newY);
+        return;
+      }
 
-      onOverlayMove(newX, newY);
+      // Handle overlay dragging
+      if (isDragging && onOverlayMove) {
+        const newX = x - dragOffset.x;
+        const newY = y - dragOffset.y;
+        onOverlayMove(newX, newY);
+      }
     };
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      setDraggedPlanet(null);
+      setDragOffset({ x: 0, y: 0 });
+    };
+
+    const handleMouseLeave = () => {
+      setIsDragging(false);
+      setDraggedPlanet(null);
       setDragOffset({ x: 0, y: 0 });
     };
 
@@ -499,9 +579,10 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
               className={`border border-slate-200 rounded-lg shadow-sm max-w-full transition-all duration-200 ${
                 state.mode === 'plot' && !state.isPlottingComplete ? 'cursor-crosshair' : 
+                draggedPlanet ? 'cursor-grabbing' :
                 overlaySelected && isDragging ? 'cursor-grabbing' :
                 overlaySelected ? 'cursor-grab' : 'cursor-pointer'
               }`}
@@ -521,6 +602,12 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
           {(state.displayOptions.chakra || state.displayOptions.directions) && state.isPlottingComplete && (
             <div className="text-center text-sm text-green-600">
               {state.displayOptions.directions ? 'Directions overlay is active' : 'Chakra overlay is active'} - click to select and modify
+            </div>
+          )}
+
+          {state.displayOptions.planets && state.isPlottingComplete && (
+            <div className="text-center text-sm text-emerald-600">
+              Planet labels are active - drag to move them around the floor plan
             </div>
           )}
         </div>
