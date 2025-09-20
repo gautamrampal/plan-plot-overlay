@@ -97,12 +97,13 @@ export const OverlayControls = ({
       if (!isNaN(degree)) {
         const normalizedDegree = ((degree % 360) + 360) % 360;
         console.log('Normalized degree:', normalizedDegree);
-        console.log('Calling onRotationChange with:', normalizedDegree);
+        console.log('Setting rotation slider to:', normalizedDegree);
+        // Update the rotation slider value which will trigger the rotation
         onRotationChange(normalizedDegree);
         setDegreeInput('');
         toast({
           title: "Rotation Applied",
-          description: `Chakra rotated to ${normalizedDegree}°`,
+          description: `Rotation set to ${normalizedDegree}°`,
         });
       } else {
         toast({
