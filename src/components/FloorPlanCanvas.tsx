@@ -383,9 +383,19 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
       }
 
       // Draw planet labels if enabled
+      console.log('Planet check:', {
+        planetsEnabled: state.displayOptions.planets,
+        plottingComplete: state.isPlottingComplete,
+        planetCount: state.planetPositions?.length || 0,
+        centerExists: !!state.center
+      });
+      
       if (state.displayOptions.planets && state.isPlottingComplete) {
-        console.log('Drawing planets:', state.planetPositions.length, 'planets');
-        state.planetPositions.forEach((planet) => {
+        console.log('Drawing planets:', state.planetPositions?.length || 0, 'planets');
+        console.log('Planet positions:', state.planetPositions);
+        
+        const planets = state.planetPositions || [];
+        planets.forEach((planet) => {
           // Draw planet background circle
           ctx.fillStyle = '#10b981';
           ctx.beginPath();

@@ -53,8 +53,12 @@ export const OverlayControls = ({
   };
 
   const handleDisplayOptionClick = (key: string, checked: boolean) => {
-    console.log(`Attempting to toggle ${key} to ${checked}, plotting complete: ${isPlottingComplete}`);
+    console.log(`Display option click: ${key} = ${checked}`);
+    console.log('Is plotting complete:', isPlottingComplete);
+    console.log('Current display options:', displayOptions);
+    
     if (!isPlottingComplete) {
+      console.log('Blocking because plotting not complete');
       toast({
         title: "Plot Required",
         description: "Mark points on the floor plan first",
@@ -62,6 +66,7 @@ export const OverlayControls = ({
       });
       return;
     }
+    console.log('Calling onDisplayOptionChange');
     onDisplayOptionChange(key, checked);
   };
 
