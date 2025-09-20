@@ -196,10 +196,14 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
         });
 
         // Initialize planet positions when planets option is enabled
-        if (option === 'planets' && newState.planetPositions.length === 0) {
+        if (option === 'planets') {
+          console.log('Enabling planets option, center:', newState.center);
+          console.log('Current planet positions:', newState.planetPositions.length);
+          
           const planetNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
           const center = newState.center;
-          if (center) {
+          
+          if (center && newState.planetPositions.length === 0) {
             const radius = 150;
             const angleStep = (2 * Math.PI) / planetNames.length;
             newState.planetPositions = planetNames.map((name, index) => ({
@@ -208,6 +212,15 @@ export const FloorPlanEditor = ({ onFloorPlanUpload, forceShowUploader = false }
               x: center.x + Math.cos(index * angleStep) * radius,
               y: center.y + Math.sin(index * angleStep) * radius,
             }));
+            console.log('Created planet positions:', newState.planetPositions);
+          } else if (!center) {
+            console.log('No center point available for planet initialization');
+            // Force planets option to false if no center
+            newState.displayOptions.planets = false;
+            toast.error('Please mark at least 3 points to enable planets');
+            return newState;
+          } else {
+            console.log('Planet positions already exist, keeping current positions');
           }
         }
 

@@ -384,6 +384,7 @@ export const FloorPlanCanvas = forwardRef<HTMLCanvasElement, FloorPlanCanvasProp
 
       // Draw planet labels if enabled
       if (state.displayOptions.planets && state.isPlottingComplete) {
+        console.log('Drawing planets:', state.planetPositions.length, 'planets');
         state.planetPositions.forEach((planet) => {
           // Draw planet background circle
           ctx.fillStyle = '#10b981';

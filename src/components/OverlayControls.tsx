@@ -53,10 +53,11 @@ export const OverlayControls = ({
   };
 
   const handleDisplayOptionClick = (key: string, checked: boolean) => {
+    console.log(`Attempting to toggle ${key} to ${checked}, plotting complete: ${isPlottingComplete}`);
     if (!isPlottingComplete) {
       toast({
         title: "Plot Required",
-        description: "Mark points on the floor plan",
+        description: "Mark points on the floor plan first",
         variant: "destructive",
       });
       return;
