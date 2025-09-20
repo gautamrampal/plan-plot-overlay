@@ -416,8 +416,14 @@ export const OverlayControls = ({
                   type="number"
                   placeholder="0-360"
                   value={degreeInput}
-                  onChange={(e) => setDegreeInput(e.target.value)}
-                  onKeyDown={handleDegreeInput}
+                  onChange={(e) => {
+                    console.log('Input value changed:', e.target.value);
+                    setDegreeInput(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    console.log('Key pressed:', e.key);
+                    handleDegreeInput(e);
+                  }}
                   className="w-20 h-8 text-sm"
                   disabled={!isPlottingComplete || (!displayOptions.chakra && !displayOptions.chakraDirections)}
                 />
